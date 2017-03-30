@@ -37,6 +37,234 @@ const (
 type B4SCChaincode struct {
 }
 
+//////////////////////////@@@@@@@@@@@@@@@@@  santosh compliance document   @@@@@@@@@@@@@@@\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
+//storing compliance document mdetadata and hash
+type ComplianceDocument struct {
+	compliance_id      string
+	manufacturer       string
+	regulator          string
+	documentTitle      string
+	document_mime_type string
+	documentHash       string
+	documentType       string
+	createdBy          string
+	createdDate        string
+}
+
+//mapping for entity and corresponding document
+type EntityComplianceDocMapping struct {
+	complianceIds []string
+}
+
+//collection of all the compliance document ids
+type ComplianceIds struct {
+	complianceIds []string
+}
+
+//list of compliance document
+type ComplianceDocumentList struct {
+	complianceDocumentList []ComplianceDocument
+}
+
+//method for storing complaince document metadata and hash
+func uploadComplianceDocument(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
+	resp := BlockchainResponse{}
+	fmt.Println("uploading compliance document")
+	compDoc, _ := parseComplianceDocument(args[0])
+	complianceId := compDoc.compliance_id
+	saveErr := saveComplianceDocument(stub, complianceId, compDoc)
+	if saveErr != nil {
+		resp.Err = "000"
+		resp.ErrMsg = complianceId
+		resp.Message = "Document Not saved"
+		respString, _ := json.Marshal(resp)
+		return []byte(respString), saveErr
+	}
+	entityCompMapRequest := EntityComplianceDocMapping{}
+	entityCompMap, err := fetchEntityComplianceDocumentMapping(stub, compDoc.manufacturer)
+	if err != nil {
+		entityCompMapRequest.complianceIds = append(entityCompMapRequest.complianceIds, complianceId)
+		saveEntityComplianceDocumentMapping(stub, entityCompMapRequest, compDoc.manufacturer)
+	} else {
+		entityCompMapRequest.complianceIds = append(entityCompMap.complianceIds, complianceId)
+		fmt.Println("Updated entity compliance document mapping", entityCompMapRequest)
+		saveEntityComplianceDocumentMapping(stub, entityCompMapRequest, compDoc.manufacturer)
+	}
+	complianceidsRequest := ComplianceIds{}
+	complianceids, err := fetchComplianceDocumentIds(stub, "CompDocIDs")
+	if err != nil {
+		complianceidsRequest.complianceIds = append(complianceidsRequest.complianceIds, complianceId)
+		saveComplianceDocumentIds(stub, complianceidsRequest)
+	} else {
+		complianceidsRequest.complianceIds = append(complianceids.complianceIds, complianceId)
+		fmt.Println("Updated entity compliance document mapping", entityCompMapRequest)
+		saveComplianceDocumentIds(stub, complianceidsRequest)
+	}
+	if err != nil {
+		fmt.Println("Could not uploaded compliance document", err)
+		return nil, err
+	}
+	resp.Err = "200"
+	resp.ErrMsg = "Data Saved"
+	resp.Message = "Successfully uploaded compliance document to ledger"
+	respString, _ := json.Marshal(resp)
+
+	fmt.Println("Successfully uploaded compliance document to ledger")
+	return []byte(respString), nil
+}
+
+//save entity compliance document mapping in blockchain
+func saveEntityComplianceDocumentMapping(stub shim.ChaincodeStubInterface, entityCompMapRequest EntityComplianceDocMapping, entityname string) ([]byte, error) {
+	dataToStore, _ := json.Marshal(entityCompMapRequest)
+	entitykey := entityname + "ComDoc"
+	err := stub.PutState(entitykey, []byte(dataToStore))
+	if err != nil {
+		fmt.Println("Could not save Entity compliance Mapping to ledger", err)
+		return nil, err
+	}
+
+	resp := BlockchainResponse{}
+	resp.Err = "000"
+	resp.Message = entityname
+
+	respString, _ := json.Marshal(resp)
+
+	fmt.Println("Successfully saved Entity WayBill Mapping")
+	return []byte(respString), nil
+
+}
+
+//save compliance document ids in blockchain
+func saveComplianceDocumentIds(stub shim.ChaincodeStubInterface, comids ComplianceIds) ([]byte, error) {
+	dataToStore, _ := json.Marshal(comids)
+	err := stub.PutState("CompDocIDs", []byte(dataToStore))
+	if err != nil {
+		fmt.Println("Could not save complianceIds to ledger", err)
+		return nil, err
+	}
+
+	resp := BlockchainResponse{}
+	resp.Err = "000"
+	resp.Message = "CompDocIDs"
+	respString, _ := json.Marshal(resp)
+
+	fmt.Println("Successfully saved compliance IDs")
+	return []byte(respString), nil
+
+}
+
+//get entity name from compliance Document json
+func parseComplianceDocument(jsonComDoc string) (ComplianceDocument, error) {
+
+	var complianceDoc ComplianceDocument
+
+	if marshErr := json.Unmarshal([]byte(jsonComDoc), &complianceDoc); marshErr != nil {
+		fmt.Println("Could not Unmarshal compliance Document", marshErr)
+		return complianceDoc, marshErr
+	}
+	return complianceDoc, nil
+}
+
+//save compliance document to blockchain
+func saveComplianceDocument(stub shim.ChaincodeStubInterface, complianceId string, compDoc ComplianceDocument) error {
+	dataToStore, _ := json.Marshal(compDoc)
+	err := stub.PutState(complianceId, []byte(dataToStore))
+	if err != nil {
+		fmt.Println("compliance document not uploaded to ledger", err)
+		return err
+	}
+	return err
+}
+
+//fetch entity compliance document mapping
+func fetchEntityComplianceDocumentMapping(stub shim.ChaincodeStubInterface, entityname string) (EntityComplianceDocMapping, error) {
+	var entityComplianceDocMapping EntityComplianceDocMapping
+	entitykey := entityname + "ComDoc"
+	indexByte, err := stub.GetState(entitykey)
+	if err != nil {
+		fmt.Println("Could not retrive entity compliance mapping ", err)
+		return entityComplianceDocMapping, err
+	}
+
+	if marshErr := json.Unmarshal(indexByte, &entityComplianceDocMapping); marshErr != nil {
+		fmt.Println("Could not retrive entity compliance mapping from ledger", marshErr)
+		return entityComplianceDocMapping, marshErr
+	}
+
+	return entityComplianceDocMapping, nil
+
+}
+
+//fetch compliance ids collection
+func fetchComplianceDocumentIds(stub shim.ChaincodeStubInterface, compkey string) (ComplianceIds, error) {
+	var complianceids ComplianceIds
+	indexByte, err := stub.GetState(compkey)
+	if err != nil {
+		fmt.Println("Could not retrive complianceids", err)
+		return complianceids, err
+	}
+
+	if marshErr := json.Unmarshal(indexByte, &complianceids); marshErr != nil {
+		fmt.Println("Could not retrive complianceids from ledger", marshErr)
+		return complianceids, marshErr
+	}
+
+	return complianceids, nil
+
+}
+
+func getComplianceDocumentByEntityName(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
+	complianceDocumentList := ComplianceDocumentList{}
+	entityComplianceMapping, err := fetchEntityComplianceDocumentMapping(stub, args[0])
+	if err != nil {
+		return nil, nil
+	} else {
+		iterator := len(entityComplianceMapping.complianceIds)
+		for i := 0; i < iterator; i++ {
+			complianceDocuments, _ := fetchComplianceDocumentByComplianceId(stub, entityComplianceMapping.complianceIds[i])
+			complianceDocumentList.complianceDocumentList = append(complianceDocumentList.complianceDocumentList, complianceDocuments)
+		}
+		dataToReturn, _ := json.Marshal(complianceDocumentList)
+		return []byte(dataToReturn), nil
+	}
+	return nil, nil
+}
+func fetchComplianceDocumentByComplianceId(stub shim.ChaincodeStubInterface, complianceid string) (ComplianceDocument, error) {
+	var complianceDocument ComplianceDocument
+	indexByte, err := stub.GetState(complianceid)
+	if err != nil {
+		fmt.Println("Could not retrive compliance document", err)
+		return complianceDocument, err
+	}
+
+	if marshErr := json.Unmarshal(indexByte, &complianceDocument); marshErr != nil {
+		fmt.Println("Could not retrive complianceids from ledger", marshErr)
+		return complianceDocument, marshErr
+	}
+
+	return complianceDocument, nil
+
+}
+
+func getAllComplianceDocument(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
+	complianceDocumentList := ComplianceDocumentList{}
+	complianceIds, err := fetchComplianceDocumentIds(stub, args[0])
+	if err != nil {
+		return nil, nil
+	} else {
+		iterator := len(complianceIds.complianceIds)
+		for i := 0; i < iterator; i++ {
+			complianceDocuments, _ := fetchComplianceDocumentByComplianceId(stub, complianceIds.complianceIds[i])
+			complianceDocumentList.complianceDocumentList = append(complianceDocumentList.complianceDocumentList, complianceDocuments)
+		}
+		dataToReturn, _ := json.Marshal(complianceDocumentList)
+		return []byte(dataToReturn), nil
+	}
+	return nil, nil
+}
+
+///////////////////////////////////////////////////////end compliance docuent \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
+
 //custom data models
 
 type Pallet struct {
@@ -149,34 +377,6 @@ type AllWorkflows struct {
 	Workflows []WorkflowDetails `json:"workflows"`
 }
 
-/************** ShipmentPageLoad Starts ********************/
-
-type ShipmentPageLoadRequest struct {
-	CallingEntityName string `json:"callingEntityName"`
-}
-
-type ConsignerShipmentPageLoadResponse struct {
-	ConsignerId        string `json:"consignerId"`
-	ConsignerName      string `json:"consignerName"`
-	ConsignerAddress   string `json:"consignerAddress"`
-	ConsignerRegNumber string `json:"consignerRegNumber"`
-}
-
-type ConsigneeShipmentPageLoadResponse struct {
-	ConsigneeId      string `json:"consigneeId"`
-	ConsigneeName    string `json:"consigneeName"`
-	ConsigneeAddress string `json:"consigneeAddress"`
-	ConsigneeCountry string `json:"consigneeCountry"`
-}
-
-type ShipmentPageLoadResponse struct {
-	CallingEntityName string                              `json:"callingEntityName"`
-	Consigner         ConsignerShipmentPageLoadResponse   `json:"consigner"`
-	Consignee         []ConsigneeShipmentPageLoadResponse `json:"consignee"`
-	Carrier           []string                            `json:"carrier"`
-	ModelNames        []string                            `json:"modelNames"`
-}
-
 /************** Arshad Start Code This new struct for AssetDetails , CartonDetails , PalletDetails  is added by Arshad as to incorporate new LLD published orginal structure
 are not touched as of now to avoid break of any functionality devloped by Kartik 20/3/2017***************/
 
@@ -283,54 +483,55 @@ type CreatePalletDetailsRequest struct {
 
 //Will be avlable in the WorldStats as "ShipmentWayBillIndex"
 type ShipmentWayBillIndex struct {
-	ShipmentNumber		[]string
+	ShipmentNumber []string
 }
 
 //Will be avlable in the WorldStats as "WayBillNumberIndex"
 type WayBillNumberIndex struct {
-	WayBillNumber		[]string
+	WayBillNumber []string
 }
+
 /*This is common struct across Shipment and Waybill*/
 type ShipmentWayBill struct {
-	WayBillNumber         string 			`json:"wayBillNumber"`
-	ShipmentNumber        string 			`json:"shipmentNumber"`
-	CountryFrom           string 			`json:"countryFrom"`
-	CountryTo             string 			`json:"countryTo"`
-	Consigner             string 			`json:"consigner"`
-	Consignee             string 			`json:"consignee"`
-	Custodian             string 			`json:"custodian"`
-	CustodianHistory      []string 			`json:"custodianHistory"`
-	PersonConsigningGoods string 			`json:"personConsigningGoods"`
-	Comments              string 			`json:"comments"`
-	TpComments            string 			`json:"tpComments"`
-	VehicleNumber         string 			`json:"vehicleNumber"`
-	VehicleType           string 			`json:"vehicleType"`
-	PickupDate            string 			`json:"pickupDate"`
-	PalletsSerialNumber   []string 			`json:"palletsSerialNumber"`
-	AddressOfConsigner    string 			`json:"addressOfConsigner"`
-	AddressOfConsignee    string 			`json:"addressOfConsignee"`
-	ConsignerRegNumber    string 			`json:"consignerRegNumber"`
-	Carrier               string 			`json:"carrier"`
-	VesselType            string 			`json:"vesselType"`
-	VesselNumber          string 			`json:"vesselNumber"`
-	ContainerNumber       string 			`json:"containerNumber"`
-	ServiceType           string 			`json:"serviceType"`
-	ShipmentModel         string 			`json:"shipmentModel"`
-	PalletsQuantity       string 			`json:"palletsQuantity"`
-	CartonsQuantity       string 			`json:"cartonsQuantity"`
-	AssetsQuantity        string 			`json:"assetsQuantity"`
-	ShipmentValue         string 			`json:"shipmentValue"`
-	EntityName            string 			`json:"entityName"`
-	ShipmentCreationDate  string 			`json:"shipmentCreationDate"`
-	EWWayBillNumber       string 			`json:"eWWayBillNumber"`
-	SupportiveDocuments   []string 			`json:"supportiveDocuments"`
-	ShipmentCreatedBy     string 			`json:"shipmentCreatedBy"`
-	ShipmentModifiedDate  string 			`json:"shipmentModifiedDate"`
-	ShipmentModifiedBy    string 			`json:"shipmentModifiedBy"`
-	WayBillCreationDate   string 			`json:"wayBillCreationDate"`
-	WayBillCreatedBy      string 			`json:"wayBillCreatedBy"`
-	WayBillModifiedDate   string 			`json:"wayBillModifiedDate"`
-	WayBillModifiedBy     string 			`json:"wayBillModifiedBy"`
+	WayBillNumber         string   `json:"wayBillNumber"`
+	ShipmentNumber        string   `json:"shipmentNumber"`
+	CountryFrom           string   `json:"countryFrom"`
+	CountryTo             string   `json:"countryTo"`
+	Consigner             string   `json:"consigner"`
+	Consignee             string   `json:"consignee"`
+	Custodian             string   `json:"custodian"`
+	CustodianHistory      []string `json:"custodianHistory"`
+	PersonConsigningGoods string   `json:"personConsigningGoods"`
+	Comments              string   `json:"comments"`
+	TpComments            string   `json:"tpComments"`
+	VehicleNumber         string   `json:"vehicleNumber"`
+	VehicleType           string   `json:"vehicleType"`
+	PickupDate            string   `json:"pickupDate"`
+	PalletsSerialNumber   []string `json:"palletsSerialNumber"`
+	AddressOfConsigner    string   `json:"addressOfConsigner"`
+	AddressOfConsignee    string   `json:"addressOfConsignee"`
+	ConsignerRegNumber    string   `json:"consignerRegNumber"`
+	Carrier               string   `json:"carrier"`
+	VesselType            string   `json:"vesselType"`
+	VesselNumber          string   `json:"vesselNumber"`
+	ContainerNumber       string   `json:"containerNumber"`
+	ServiceType           string   `json:"serviceType"`
+	ShipmentModel         string   `json:"shipmentModel"`
+	PalletsQuantity       string   `json:"palletsQuantity"`
+	CartonsQuantity       string   `json:"cartonsQuantity"`
+	AssetsQuantity        string   `json:"assetsQuantity"`
+	ShipmentValue         string   `json:"shipmentValue"`
+	EntityName            string   `json:"entityName"`
+	ShipmentCreationDate  string   `json:"shipmentCreationDate"`
+	EWWayBillNumber       string   `json:"eWWayBillNumber"`
+	SupportiveDocuments   []string `json:"supportiveDocuments"`
+	ShipmentCreatedBy     string   `json:"shipmentCreatedBy"`
+	ShipmentModifiedDate  string   `json:"shipmentModifiedDate"`
+	ShipmentModifiedBy    string   `json:"shipmentModifiedBy"`
+	WayBillCreationDate   string   `json:"wayBillCreationDate"`
+	WayBillCreatedBy      string   `json:"wayBillCreatedBy"`
+	WayBillModifiedDate   string   `json:"wayBillModifiedDate"`
+	WayBillModifiedBy     string   `json:"wayBillModifiedBy"`
 }
 
 type EWWayBill struct {
@@ -1332,197 +1533,8 @@ func UpdatePalletCartonAssetByWayBill(stub shim.ChaincodeStubInterface, wayBillR
 
 /************** Update Pallet Details Ends ************************/
 
-/**************Arshad End new code as per LLD****************/
+/**************Arshad End new code as per LLD***************
 
-func ShipmentPageLoad(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
-	fmt.Println("Entering ShipmentPageLoad New " + args[0])
-
-	var err error
-	var allEntities AllEntities
-
-	var tmpEntity Entity
-
-	var consignerDetails ConsignerShipmentPageLoadResponse
-	var consigneeArr []ConsigneeShipmentPageLoadResponse
-	var carrier []string
-	var response ShipmentPageLoadResponse
-	var assetModelDetails AssetModelDetails
-
-	request := parseShipmentPageLoadRequest(args[0])
-
-	allEntities, err = fetchAllEntities(stub)
-	if err != nil {
-		return nil, err
-	}
-
-	lenOfArray := len(allEntities.EntityArr)
-
-	for i := 0; i < lenOfArray; i++ {
-		tmpEntity, err = fetchEntities(stub, allEntities.EntityArr[i])
-		if err == nil {
-			fmt.Println("tmpEntity.Name == " + tmpEntity.EntityName)
-			fmt.Println("request.CallingEntityName ==  " + request.CallingEntityName)
-			if tmpEntity.EntityName == request.CallingEntityName {
-				consignerDetails.ConsignerId = tmpEntity.EntityId
-				consignerDetails.ConsignerName = tmpEntity.EntityName
-				consignerDetails.ConsignerAddress = tmpEntity.EntityAddress
-				consignerDetails.ConsignerRegNumber = tmpEntity.EntityRegNumber
-
-			}
-		}
-	}
-
-	assetModelDetails, err = fetchAssetModelName(stub)
-	fmt.Println("consignerDetails.Id == " + consignerDetails.ConsignerId)
-	if consignerDetails.ConsignerId != "" {
-		consigneeArr, carrier, err = fetchCorrespondingConsignees(stub, consignerDetails.ConsignerId)
-		response.CallingEntityName = request.CallingEntityName
-		response.Consigner = consignerDetails
-		response.Consignee = consigneeArr
-		response.Carrier = carrier
-		response.ModelNames = assetModelDetails.ModelNames
-	}
-
-	fmt.Println(response)
-	fmt.Println("Exiting ShipmentPageLoad ")
-
-	return json.Marshal(response)
-
-	//return nil,nil
-
-}
-
-func fetchCorrespondingConsignees(stub shim.ChaincodeStubInterface, fromEntityID string) ([]ConsigneeShipmentPageLoadResponse, []string, error) {
-	fmt.Println("Entering fetchCorrespondingConsignees " + fromEntityID)
-	var workflows AllWorkflows
-	var err error
-
-	var consigneeArr []ConsigneeShipmentPageLoadResponse
-	var carrier []string
-
-	workflows, err = fetchWorkflows(stub)
-
-	if err == nil {
-		lenOfArray := len(workflows.Workflows)
-		for i := 0; i < lenOfArray; i++ {
-			if fromEntityID == workflows.Workflows[i].FromEntity {
-				var tmpEntity Entity
-				var tmpConsignee ConsigneeShipmentPageLoadResponse
-				tmpEntity, err = fetchEntities(stub, workflows.Workflows[i].ToEntity)
-				if err == nil {
-					tmpConsignee.ConsigneeId = tmpEntity.EntityId
-					tmpConsignee.ConsigneeName = tmpEntity.EntityName
-					tmpConsignee.ConsigneeAddress = tmpEntity.EntityAddress
-					tmpConsignee.ConsigneeCountry = tmpEntity.EntityCountry
-
-					consigneeArr = append(consigneeArr, tmpConsignee)
-					carrier = append(carrier, workflows.Workflows[i].Carrier)
-				}
-			}
-		}
-	} else {
-		fmt.Println("Error while fetching workflow data", err)
-		return consigneeArr, carrier, err
-	}
-	fmt.Println(consigneeArr)
-	fmt.Println("Exiting fetchCorrespondingConsignees ")
-
-	return consigneeArr, carrier, nil
-
-}
-
-func fetchAssetModelName(stub shim.ChaincodeStubInterface) (AssetModelDetails, error) {
-	fmt.Println("Entering fetchAssetModelName ")
-	var modelnames AssetModelDetails
-
-	indexByte, err := stub.GetState("ASSET_MODEL_NAMES")
-	if err != nil {
-		fmt.Println("Could not retrive Shipment Index", err)
-		return modelnames, err
-	}
-
-	if marshErr := json.Unmarshal(indexByte, &modelnames); marshErr != nil {
-		fmt.Println("Could not save Shipment to ledger", marshErr)
-		return modelnames, marshErr
-	}
-	fmt.Println(modelnames)
-	fmt.Println("Exiting fetchAssetModelName ")
-	return modelnames, nil
-
-}
-
-func fetchWorkflows(stub shim.ChaincodeStubInterface) (AllWorkflows, error) {
-	fmt.Println("Entering fetchWorkflows ")
-	var workflows AllWorkflows
-
-	indexByte, err := stub.GetState("ALL_WORKFLOWS")
-	if err != nil {
-		fmt.Println("Could not retrive Shipment Index", err)
-		return workflows, err
-	}
-
-	if marshErr := json.Unmarshal(indexByte, &workflows); marshErr != nil {
-		fmt.Println("Could not save Shipment to ledger", marshErr)
-		return workflows, marshErr
-	}
-	fmt.Println(workflows)
-	fmt.Println("Exiting fetchWorkflows ")
-	return workflows, nil
-
-}
-
-func fetchEntities(stub shim.ChaincodeStubInterface, entityID string) (Entity, error) {
-	fmt.Println("Entering fetchEntities " + entityID)
-	var entities Entity
-
-	indexByte, err := stub.GetState(entityID)
-	if err != nil {
-		fmt.Println("Could not retrive Shipment Index", err)
-		return entities, err
-	}
-	fmt.Println("entities Bytes :  " + string(indexByte))
-
-	if marshErr := json.Unmarshal(indexByte, &entities); marshErr != nil {
-		fmt.Println("Could not save Shipment to ledger", marshErr)
-		return entities, marshErr
-	}
-
-	fmt.Println(entities)
-	fmt.Println("Exiting fetchEntities ")
-	return entities, nil
-
-}
-
-func fetchAllEntities(stub shim.ChaincodeStubInterface) (AllEntities, error) {
-	fmt.Println("Entering fetchAllEntities ")
-	var allEntities AllEntities
-
-	indexByte, err := stub.GetState("ALL_ENTITIES")
-	if err != nil {
-		fmt.Println("Could not retrive Shipment Index", err)
-		return allEntities, err
-	}
-
-	if marshErr := json.Unmarshal(indexByte, &allEntities); marshErr != nil {
-		fmt.Println("Could not save Shipment to ledger", marshErr)
-		return allEntities, marshErr
-	}
-	fmt.Println(allEntities)
-	fmt.Println("Exiting fetchAllEntities ")
-	return allEntities, nil
-
-}
-
-func parseShipmentPageLoadRequest(jsondata string) ShipmentPageLoadRequest {
-	fmt.Println("Entering parseShipmentPageLoadRequest ")
-	res := ShipmentPageLoadRequest{}
-	json.Unmarshal([]byte(jsondata), &res)
-	fmt.Println(res)
-	fmt.Println("Exiting parseShipmentPageLoadRequest ")
-	return res
-}
-
-/************** ShipmentPageLoad Ends ***************************/
 
 /************** Create Shipment Starts ************************/
 /**
@@ -2266,12 +2278,14 @@ func (t *B4SCChaincode) Invoke(stub shim.ChaincodeStubInterface, function string
 		return UpdateCartonDetails(stub, args)
 	} else if function == "UpdatePalletDetails" {
 		return UpdatePalletDetails(stub, args)
+	} else if function == "uploadComplianceDocument" {
+		return uploadComplianceDocument(stub, args)
 	} else if function == "UpdateEntityWayBillMapping" {
 		return nil, nil //UpdateEntityWayBillMapping(stub, args)
 	} else {
 		return nil, errors.New("Invalid function name " + function)
 	}
-	//return nil, nil
+	//return nil, nil getComplianceDocumentByEntityName getAllComplianceDocument
 }
 
 func (t *B4SCChaincode) Query(stub shim.ChaincodeStubInterface, function string, args []string) ([]byte, error) {
@@ -2292,7 +2306,8 @@ func (t *B4SCChaincode) Query(stub shim.ChaincodeStubInterface, function string,
 	} else if function == "SearchDateRange" {
 		return SearchDateRange(stub, args)
 	} else if function == "ShipmentPageLoad" {
-		return ShipmentPageLoad(stub, args)
+		var pageLoadService ShipmentPageLoadService 
+		return pageLoadService.ShipmentPageLoad(stub, args)
 	} else if function == "ViewEWWayBill" {
 		return nil, nil //ViewEWWayBill(stub, args)
 	} else if function == "ViewEWWayBill" {
@@ -2307,6 +2322,10 @@ func (t *B4SCChaincode) Query(stub shim.ChaincodeStubInterface, function string,
 		return GetCarton(stub, args)
 	} else if function == "ViewShipmentWayBill" {
 		return ViewShipmentWayBill(stub, args)
+	} else if function == "getComplianceDocumentByEntityName" {
+		return getComplianceDocumentByEntityName(stub, args)
+	} else if function == "getAllComplianceDocument" {
+		return getAllComplianceDocument(stub, args)
 	}
 	return nil, errors.New("Invalid function name " + function)
 
