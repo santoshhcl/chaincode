@@ -53,12 +53,12 @@ type ComplianceDocument struct {
 
 //mapping for entity and corresponding document
 type EntityComplianceDocMapping struct {
-	ComplianceIds []string `json:"ComplianceIds"`
+	ComplianceIds []string `json:"complianceIds"`
 }
 
 //collection of all the compliance document ids
 type ComplianceIds struct {
-	ComplianceIds []string `json:"ComplianceIds"`
+	ComplianceIds []string `json:"complianceIds"`
 }
 
 //list of compliance document
@@ -72,7 +72,7 @@ func uploadComplianceDocument(stub shim.ChaincodeStubInterface, args []string) (
 	fmt.Println("uploading compliance document", args[0])
 	compDoc, _ := parseComplianceDocument(args[0])
 	fmt.Println("uploading compliance document", compDoc)
-	complianceId := compDoc.compliance_id
+	complianceId := compDoc.Compliance_id
 	saveErr := saveComplianceDocument(stub, complianceId, compDoc)
 	if saveErr != nil {
 		resp.Err = "000"
@@ -82,22 +82,22 @@ func uploadComplianceDocument(stub shim.ChaincodeStubInterface, args []string) (
 		return []byte(respString), saveErr
 	}
 	entityCompMapRequest := EntityComplianceDocMapping{}
-	entityCompMap, err := fetchEntityComplianceDocumentMapping(stub, compDoc.manufacturer)
+	entityCompMap, err := fetchEntityComplianceDocumentMapping(stub, compDoc.Manufacturer)
 	if err != nil {
-		entityCompMapRequest.complianceIds = append(entityCompMapRequest.complianceIds, complianceId)
-		saveEntityComplianceDocumentMapping(stub, entityCompMapRequest, compDoc.manufacturer)
+		entityCompMapRequest.ComplianceIds = append(entityCompMapRequest.ComplianceIds, complianceId)
+		saveEntityComplianceDocumentMapping(stub, entityCompMapRequest, compDoc.Manufacturer)
 	} else {
-		entityCompMapRequest.complianceIds = append(entityCompMap.complianceIds, complianceId)
+		entityCompMapRequest.ComplianceIds = append(entityCompMap.ComplianceIds, complianceId)
 		fmt.Println("Updated entity compliance document mapping", entityCompMapRequest)
-		saveEntityComplianceDocumentMapping(stub, entityCompMapRequest, compDoc.manufacturer)
+		saveEntityComplianceDocumentMapping(stub, entityCompMapRequest, compDoc.Manufacturer)
 	}
 	complianceidsRequest := ComplianceIds{}
 	complianceids, err := fetchComplianceDocumentIds(stub, "CompDocIDs")
 	if err != nil {
-		complianceidsRequest.complianceIds = append(complianceidsRequest.complianceIds, complianceId)
+		complianceidsRequest.ComplianceIds = append(complianceidsRequest.ComplianceIds, complianceId)
 		saveComplianceDocumentIds(stub, complianceidsRequest)
 	} else {
-		complianceidsRequest.complianceIds = append(complianceids.complianceIds, complianceId)
+		complianceidsRequest.ComplianceIds = append(complianceids.ComplianceIds, complianceId)
 		fmt.Println("Updated entity compliance document mapping", entityCompMapRequest)
 		saveComplianceDocumentIds(stub, complianceidsRequest)
 	}
