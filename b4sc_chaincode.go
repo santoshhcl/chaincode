@@ -158,10 +158,7 @@ func saveComplianceDocumentIds(stub shim.ChaincodeStubInterface, comids Complian
 func parseComplianceDocument(jsonComDoc string) (ComplianceDocument, error) {
 	complianceDoc := ComplianceDocument{}
 	fmt.Println("compliance document unmarshal", jsonComDoc)
-	if marshErr := json.Unmarshal([]byte(jsonComDoc), &complianceDoc); marshErr != nil {
-		fmt.Println("Could not Unmarshal compliance Document", marshErr)
-		return complianceDoc, marshErr
-	}
+	json.Unmarshal([]byte(jsonComDoc), &complianceDoc)
 	fmt.Println("Unmarshal compliance Document", complianceDoc)
 	return complianceDoc, nil
 }
