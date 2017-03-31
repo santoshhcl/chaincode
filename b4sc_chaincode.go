@@ -163,13 +163,14 @@ func parseComplianceDocument(jsonComDoc string) (ComplianceDocument, error) {
 		fmt.Println("Could not Unmarshal compliance Document", marshErr)
 		return complianceDoc, marshErr
 	}
+	fmt.Println("Unmarshal compliance Document", complianceDoc)
 	return complianceDoc, nil
 }
 
 //save compliance document to blockchain
 func saveComplianceDocument(stub shim.ChaincodeStubInterface, complianceId string, compDoc ComplianceDocument) error {
 	dataToStore, _ := json.Marshal(compDoc)
-	fmt.Fprintln("compliance id", complianceId)
+	fmt.Println("compliance id ....", complianceId)
 	err := stub.PutState(complianceId, []byte(dataToStore))
 	if err != nil {
 		fmt.Println("compliance document not uploaded to ledger", err)
