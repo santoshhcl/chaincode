@@ -40,30 +40,30 @@ type B4SCChaincode struct {
 //////////////////////////@@@@@@@@@@@@@@@@@  santosh compliance document   @@@@@@@@@@@@@@@\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
 //storing compliance document mdetadata and hash
 type ComplianceDocument struct {
-	compliance_id      string `json:"compliance_id"`
-	manufacturer       string `json:"manufacturer"`
-	regulator          string `json:"regulator"`
-	documentTitle      string `json:"documentTitle"`
-	document_mime_type string `json:"document_mime_type"`
-	documentHash       string `json:"documentHash"`
-	documentType       string `json:"documentType"`
-	createdBy          string `json:"createdBy"`
-	createdDate        string `json:"createdDate"`
+	Compliance_id      string `json:"compliance_id"`
+	Manufacturer       string `json:"manufacturer"`
+	Regulator          string `json:"regulator"`
+	DocumentTitle      string `json:"documentTitle"`
+	Document_mime_type string `json:"document_mime_type"`
+	DocumentHash       string `json:"documentHash"`
+	DocumentType       string `json:"documentType"`
+	CreatedBy          string `json:"createdBy"`
+	CreatedDate        string `json:"createdDate"`
 }
 
 //mapping for entity and corresponding document
 type EntityComplianceDocMapping struct {
-	complianceIds []string
+	ComplianceIds []string `json:"ComplianceIds"`
 }
 
 //collection of all the compliance document ids
 type ComplianceIds struct {
-	complianceIds []string
+	ComplianceIds []string `json:"ComplianceIds"`
 }
 
 //list of compliance document
 type ComplianceDocumentList struct {
-	complianceDocumentList []ComplianceDocument
+	ComplianceDocumentList []ComplianceDocument
 }
 
 //method for storing complaince document metadata and hash
