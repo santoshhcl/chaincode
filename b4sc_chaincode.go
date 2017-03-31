@@ -157,7 +157,7 @@ func saveComplianceDocumentIds(stub shim.ChaincodeStubInterface, comids Complian
 //get entity name from compliance Document json
 func parseComplianceDocument(jsonComDoc string) (ComplianceDocument, error) {
 
-	var complianceDoc ComplianceDocument
+	complianceDoc := ComplianceDocument{}
 
 	if marshErr := json.Unmarshal([]byte(jsonComDoc), &complianceDoc); marshErr != nil {
 		fmt.Println("Could not Unmarshal compliance Document", marshErr)
@@ -181,7 +181,7 @@ func saveComplianceDocument(stub shim.ChaincodeStubInterface, complianceId strin
 
 //fetch entity compliance document mapping
 func fetchEntityComplianceDocumentMapping(stub shim.ChaincodeStubInterface, entityname string) (EntityComplianceDocMapping, error) {
-	var entityComplianceDocMapping EntityComplianceDocMapping
+	entityComplianceDocMapping := EntityComplianceDocMapping{}
 	entitykey := entityname + "ComDoc"
 	indexByte, err := stub.GetState(entitykey)
 	if err != nil {
@@ -200,7 +200,7 @@ func fetchEntityComplianceDocumentMapping(stub shim.ChaincodeStubInterface, enti
 
 //fetch compliance ids collection
 func fetchComplianceDocumentIds(stub shim.ChaincodeStubInterface, compkey string) (ComplianceIds, error) {
-	var complianceids ComplianceIds
+	complianceids := ComplianceIds{}
 	indexByte, err := stub.GetState(compkey)
 	if err != nil {
 		fmt.Println("Could not retrive complianceids", err)
@@ -233,7 +233,7 @@ func getComplianceDocumentByEntityName(stub shim.ChaincodeStubInterface, args []
 	return nil, nil
 }
 func fetchComplianceDocumentByComplianceId(stub shim.ChaincodeStubInterface, complianceid string) (ComplianceDocument, error) {
-	var complianceDocument ComplianceDocument
+	complianceDocument := ComplianceDocument{}
 	indexByte, err := stub.GetState(complianceid)
 	if err != nil {
 		fmt.Println("Could not retrive compliance document", err)
