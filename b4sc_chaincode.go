@@ -69,7 +69,7 @@ type ComplianceDocumentList struct {
 //method for storing complaince document metadata and hash
 func uploadComplianceDocument(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
 	resp := BlockchainResponse{}
-	fmt.Println("uploading compliance document")
+	fmt.Println("uploading compliance document", args[0])
 	compDoc, _ := parseComplianceDocument(args[0])
 	fmt.Println("uploading compliance document", compDoc)
 	complianceId := compDoc.compliance_id
