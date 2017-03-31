@@ -40,15 +40,15 @@ type B4SCChaincode struct {
 //////////////////////////@@@@@@@@@@@@@@@@@  santosh compliance document   @@@@@@@@@@@@@@@\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
 //storing compliance document mdetadata and hash
 type ComplianceDocument struct {
-	compliance_id      string
-	manufacturer       string
-	regulator          string
-	documentTitle      string
-	document_mime_type string
-	documentHash       string
-	documentType       string
-	createdBy          string
-	createdDate        string
+	compliance_id      string `json:"compliance_id"`
+	manufacturer       string `json:"manufacturer"`
+	regulator          string `json:"regulator"`
+	documentTitle      string `json:"documentTitle"`
+	document_mime_type string `json:"document_mime_type"`
+	documentHash       string `json:"documentHash"`
+	documentType       string `json:"documentType"`
+	createdBy          string `json:"createdBy"`
+	createdDate        string `json:"createdDate"`
 }
 
 //mapping for entity and corresponding document
@@ -156,9 +156,8 @@ func saveComplianceDocumentIds(stub shim.ChaincodeStubInterface, comids Complian
 
 //get entity name from compliance Document json
 func parseComplianceDocument(jsonComDoc string) (ComplianceDocument, error) {
-
 	complianceDoc := ComplianceDocument{}
-
+	fmt.Println("compliance document unmarshal", jsonComDoc)
 	if marshErr := json.Unmarshal([]byte(jsonComDoc), &complianceDoc); marshErr != nil {
 		fmt.Println("Could not Unmarshal compliance Document", marshErr)
 		return complianceDoc, marshErr
