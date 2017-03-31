@@ -83,8 +83,10 @@ func uploadComplianceDocument(stub shim.ChaincodeStubInterface, args []string) (
 	}
 	entityCompMapRequest := EntityComplianceDocMapping{}
 	entityCompMap, err := fetchEntityComplianceDocumentMapping(stub, compDoc.Manufacturer)
+	fmt.Println("entitycompliancemapping previous entry..", entityCompMap)
 	if err != nil {
 		entityCompMapRequest.ComplianceIds = append(entityCompMapRequest.ComplianceIds, complianceId)
+		fmt.Println("entity comp mapping entity..", entityCompMapRequest)
 		saveEntityComplianceDocumentMapping(stub, entityCompMapRequest, compDoc.Manufacturer)
 	} else {
 		entityCompMapRequest.ComplianceIds = append(entityCompMap.ComplianceIds, complianceId)
@@ -93,6 +95,7 @@ func uploadComplianceDocument(stub shim.ChaincodeStubInterface, args []string) (
 	}
 	complianceidsRequest := ComplianceIds{}
 	complianceids, err := fetchComplianceDocumentIds(stub, "CompDocIDs")
+	fmt.Println("compliance ids.....", complianceids)
 	if err != nil {
 		complianceidsRequest.ComplianceIds = append(complianceidsRequest.ComplianceIds, complianceId)
 		saveComplianceDocumentIds(stub, complianceidsRequest)
@@ -101,11 +104,7 @@ func uploadComplianceDocument(stub shim.ChaincodeStubInterface, args []string) (
 		fmt.Println("Updated entity compliance document mapping", entityCompMapRequest)
 		saveComplianceDocumentIds(stub, complianceidsRequest)
 	}
-	if err != nil {
-		fmt.Println("Could not uploaded compliance document", err)
-		return nil, err
-	}
-	resp.Err = "200"
+	resp.Err = "000"
 	resp.ErrMsg = "Data Saved"
 	resp.Message = "Successfully uploaded compliance document to ledger"
 	respString, _ := json.Marshal(resp)
@@ -117,7 +116,9 @@ func uploadComplianceDocument(stub shim.ChaincodeStubInterface, args []string) (
 //save entity compliance document mapping in blockchain
 func saveEntityComplianceDocumentMapping(stub shim.ChaincodeStubInterface, entityCompMapRequest EntityComplianceDocMapping, entityname string) ([]byte, error) {
 	dataToStore, _ := json.Marshal(entityCompMapRequest)
+	fmt.Println("entity compliance document mappping data..", dataToStore)
 	entitykey := entityname + "ComDoc"
+	fmt.Println("key for entity compliance document mapping", entitykey)
 	err := stub.PutState(entitykey, []byte(dataToStore))
 	if err != nil {
 		fmt.Println("Could not save Entity compliance Mapping to ledger", err)
@@ -129,7 +130,6 @@ func saveEntityComplianceDocumentMapping(stub shim.ChaincodeStubInterface, entit
 	resp.Message = entityname
 
 	respString, _ := json.Marshal(resp)
-
 	fmt.Println("Successfully saved Entity WayBill Mapping")
 	return []byte(respString), nil
 
@@ -138,6 +138,7 @@ func saveEntityComplianceDocumentMapping(stub shim.ChaincodeStubInterface, entit
 //save compliance document ids in blockchain
 func saveComplianceDocumentIds(stub shim.ChaincodeStubInterface, comids ComplianceIds) ([]byte, error) {
 	dataToStore, _ := json.Marshal(comids)
+	fmt.Println("save compliance document ids..", dataToStore)
 	err := stub.PutState("CompDocIDs", []byte(dataToStore))
 	if err != nil {
 		fmt.Println("Could not save complianceIds to ledger", err)
@@ -167,6 +168,7 @@ func parseComplianceDocument(jsonComDoc string) (ComplianceDocument, error) {
 func saveComplianceDocument(stub shim.ChaincodeStubInterface, complianceId string, compDoc ComplianceDocument) error {
 	dataToStore, _ := json.Marshal(compDoc)
 	fmt.Println("compliance id ....", complianceId)
+	fmt.Println("compliance documnt to store.....", dataToStore)
 	err := stub.PutState(complianceId, []byte(dataToStore))
 	if err != nil {
 		fmt.Println("compliance document not uploaded to ledger", err)
@@ -198,16 +200,14 @@ func fetchEntityComplianceDocumentMapping(stub shim.ChaincodeStubInterface, enti
 func fetchComplianceDocumentIds(stub shim.ChaincodeStubInterface, compkey string) (ComplianceIds, error) {
 	complianceids := ComplianceIds{}
 	indexByte, err := stub.GetState(compkey)
+	fmt.Println("already stored compliance document keys", indexByte)
 	if err != nil {
 		fmt.Println("Could not retrive complianceids", err)
 		return complianceids, err
 	}
 
-	if marshErr := json.Unmarshal(indexByte, &complianceids); marshErr != nil {
-		fmt.Println("Could not retrive complianceids from ledger", marshErr)
-		return complianceids, marshErr
-	}
-
+	json.Unmarshal(indexByte, &complianceids)
+	fmt.Println("retrieved compliance keys after unmarshal..", complianceids)
 	return complianceids, nil
 
 }
