@@ -71,6 +71,7 @@ func uploadComplianceDocument(stub shim.ChaincodeStubInterface, args []string) (
 	resp := BlockchainResponse{}
 	fmt.Println("uploading compliance document")
 	compDoc, _ := parseComplianceDocument(args[0])
+	fmt.Println("uploading compliance document", compDoc)
 	complianceId := compDoc.compliance_id
 	saveErr := saveComplianceDocument(stub, complianceId, compDoc)
 	if saveErr != nil {
@@ -168,6 +169,7 @@ func parseComplianceDocument(jsonComDoc string) (ComplianceDocument, error) {
 //save compliance document to blockchain
 func saveComplianceDocument(stub shim.ChaincodeStubInterface, complianceId string, compDoc ComplianceDocument) error {
 	dataToStore, _ := json.Marshal(compDoc)
+	fmt.Fprintln("compliance id", complianceId)
 	err := stub.PutState(complianceId, []byte(dataToStore))
 	if err != nil {
 		fmt.Println("compliance document not uploaded to ledger", err)
@@ -2306,7 +2308,7 @@ func (t *B4SCChaincode) Query(stub shim.ChaincodeStubInterface, function string,
 	} else if function == "SearchDateRange" {
 		return SearchDateRange(stub, args)
 	} else if function == "ShipmentPageLoad" {
-		var pageLoadService ShipmentPageLoadService 
+		var pageLoadService ShipmentPageLoadService
 		return pageLoadService.ShipmentPageLoad(stub, args)
 	} else if function == "ViewEWWayBill" {
 		return nil, nil //ViewEWWayBill(stub, args)
