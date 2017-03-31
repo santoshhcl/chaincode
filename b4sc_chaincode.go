@@ -218,10 +218,10 @@ func getComplianceDocumentByEntityName(stub shim.ChaincodeStubInterface, args []
 	if err != nil {
 		return nil, nil
 	} else {
-		iterator := len(entityComplianceMapping.complianceIds)
+		iterator := len(entityComplianceMapping.ComplianceIds)
 		for i := 0; i < iterator; i++ {
-			complianceDocuments, _ := fetchComplianceDocumentByComplianceId(stub, entityComplianceMapping.complianceIds[i])
-			complianceDocumentList.complianceDocumentList = append(complianceDocumentList.complianceDocumentList, complianceDocuments)
+			complianceDocuments, _ := fetchComplianceDocumentByComplianceId(stub, entityComplianceMapping.ComplianceIds[i])
+			complianceDocumentList.ComplianceDocumentList = append(complianceDocumentList.ComplianceDocumentList, complianceDocuments)
 		}
 		dataToReturn, _ := json.Marshal(complianceDocumentList)
 		return []byte(dataToReturn), nil
@@ -251,10 +251,10 @@ func getAllComplianceDocument(stub shim.ChaincodeStubInterface, args []string) (
 	if err != nil {
 		return nil, nil
 	} else {
-		iterator := len(complianceIds.complianceIds)
+		iterator := len(complianceIds.ComplianceIds)
 		for i := 0; i < iterator; i++ {
-			complianceDocuments, _ := fetchComplianceDocumentByComplianceId(stub, complianceIds.complianceIds[i])
-			complianceDocumentList.complianceDocumentList = append(complianceDocumentList.complianceDocumentList, complianceDocuments)
+			complianceDocuments, _ := fetchComplianceDocumentByComplianceId(stub, complianceIds.ComplianceIds[i])
+			complianceDocumentList.ComplianceDocumentList = append(complianceDocumentList.ComplianceDocumentList, complianceDocuments)
 		}
 		dataToReturn, _ := json.Marshal(complianceDocumentList)
 		return []byte(dataToReturn), nil
