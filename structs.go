@@ -205,5 +205,5 @@ type ComplianceIds struct {
 
 //list of compliance document
 type ComplianceDocumentList struct {
-	ComplianceDocumentList []ComplianceIds `json:"complianceList"`
+	ComplianceDocumentList []ComplianceDocument `json:"complianceList"`
 }
