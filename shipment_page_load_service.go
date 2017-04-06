@@ -35,12 +35,23 @@ type ConsigneeShipmentPageLoadResponse struct {
 	ConsigneeRegNumber 		string 		`json:"consigneeRegNumber"`
 }
 
+
+type CarrierResponse struct {
+	CarrierID 		string			`json:"CarrierID"`
+	Name 			string			`json:"Name"`
+}
+
 type ShipmentPageLoadResponse struct {
-	CallingEntityName string                              `json:"callingEntityName"`
-	Consigner         ConsignerShipmentPageLoadResponse   `json:"consigner"`
-	Consignee         []ConsigneeShipmentPageLoadResponse `json:"consignee"`
-	Carrier           []string                            `json:"carrier"`
-	ModelNames        []string                            `json:"modelNames"`
+	CallingEntityName 			string                              `json:"callingEntityName"`
+	ConsignerId        			string 								`json:"consignerId"`
+	ConsignerName      			string 								`json:"consignerName"`
+	ConsignerType      			string 								`json:"consignerType"`
+	ConsignerAddress   			string 								`json:"consignerAddress"`
+	ConsignerRegNumber 			string 								`json:"consignerRegNumber"`
+	ConsignerCountry 			string 								`json:"consignerCountry"`
+	Consignee         			[]ConsigneeShipmentPageLoadResponse `json:"consignee"`
+	Carrier          	 		[]CarrierResponse                   `json:"carrier"`
+	ModelNames        			[]string                            `json:"modelNames"`
 }
 
 
@@ -55,7 +66,7 @@ func (t *ShipmentPageLoadService) ShipmentPageLoad(stub shim.ChaincodeStubInterf
 
 	var consignerDetails ConsignerShipmentPageLoadResponse
 	var consigneeArr []ConsigneeShipmentPageLoadResponse
-	var carrier []string
+	var carrier []CarrierResponse
 	var response ShipmentPageLoadResponse
 	var assetModelDetails AssetModelDetails
 
@@ -78,7 +89,14 @@ func (t *ShipmentPageLoadService) ShipmentPageLoad(stub shim.ChaincodeStubInterf
 	if consignerDetails.ConsignerId != "" {
 		consigneeArr, carrier, err = thisClass.fetchCorrespondingConsignees(stub, consignerDetails)
 		response.CallingEntityName = request.CallingEntityName
-		response.Consigner = consignerDetails
+
+		response.ConsignerId = consignerDetails.ConsignerId
+		response.ConsignerName = consignerDetails.ConsignerName
+		response.ConsignerType = consignerDetails.ConsignerType
+		response.ConsignerAddress = consignerDetails.ConsignerAddress
+		response.ConsignerRegNumber = consignerDetails.ConsignerRegNumber
+		response.ConsignerCountry = consignerDetails.ConsignerCountry
+
 		response.Consignee = consigneeArr
 		response.Carrier = carrier
 		response.ModelNames = assetModelDetails.ModelNames
@@ -96,7 +114,7 @@ func (t *ShipmentPageLoadService) ShipmentPageLoad(stub shim.ChaincodeStubInterf
 
 }
 
-func (t *ShipmentPageLoadService) fetchCorrespondingConsignees(stub shim.ChaincodeStubInterface, consignerDetails ConsignerShipmentPageLoadResponse) ([]ConsigneeShipmentPageLoadResponse, []string, error) {
+func (t *ShipmentPageLoadService) fetchCorrespondingConsignees(stub shim.ChaincodeStubInterface, consignerDetails ConsignerShipmentPageLoadResponse) ([]ConsigneeShipmentPageLoadResponse, []CarrierResponse, error) {
 	fmt.Println("Entering fetchCorrespondingConsignees consignerDetails : ")
 	fmt.Println(consignerDetails)
 
@@ -105,7 +123,7 @@ func (t *ShipmentPageLoadService) fetchCorrespondingConsignees(stub shim.Chainco
 
 	var consigneeArr []ConsigneeShipmentPageLoadResponse
 	
-	var carrier []string
+	var carrier []CarrierResponse
 	var allEntities AllEntities
 	
 
@@ -128,7 +146,10 @@ func (t *ShipmentPageLoadService) fetchCorrespondingConsignees(stub shim.Chainco
 				}
 
 				if(consignerDetails.ConsignerCountry == tmpEntity.EntityCountry && tmpEntity.EntityType == "ThirdPartyLogistic" ) {
-					carrier = append(carrier, tmpEntity.EntityName)
+					var tmpCarrier CarrierResponse
+					tmpCarrier.CarrierID = tmpEntity.EntityId
+					tmpCarrier.Name = tmpEntity.EntityName
+					carrier = append(carrier, tmpCarrier)
 				}
 			}
 

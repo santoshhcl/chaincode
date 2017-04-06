@@ -29,14 +29,14 @@ func CreateEWWayBill(stub shim.ChaincodeStubInterface, args []string) ([]byte, e
 
 	ewWayBillRequest := parseEWWayBillRequest(args[0])
 	lenOfArray := len(ewWayBillRequest.WayBillsNumber)
-	for i := 0; i <= lenOfArray; i++ {
+	for i := 0; i < lenOfArray; i++ {
 		wayBillShipmentMapping, err := fetchWayBillShipmentMappingData(stub, ewWayBillRequest.WayBillsNumber[i])
 		dcShipmentNumber := wayBillShipmentMapping.DCShipmentNumber
 		dcShipmentData, _ := fetchShipmentWayBillData(stub, dcShipmentNumber)
 		UpdatePalletCartonAssetByWayBill(stub, dcShipmentData, EWWAYBILL, ewWayBillRequest.EwWayBillNumber)
 		ewWayBillRequest.ShipmentsNumber = append(ewWayBillRequest.ShipmentsNumber, dcShipmentNumber)
 		lenOfArray = len(dcShipmentData.PalletsSerialNumber)
-		for j := 0; j <= lenOfArray; j++ {
+		for j := 0; j < lenOfArray; j++ {
 			ewWayBillRequest.PalletsSerialNumber = append(ewWayBillRequest.ShipmentsNumber, dcShipmentData.PalletsSerialNumber[j])
 		}
 		if err != nil {
@@ -88,7 +88,7 @@ func saveEWWayBill(stub shim.ChaincodeStubInterface, createEWWayBillRequest EWWa
 	ewWayBill.VesselNumber = createEWWayBillRequest.VesselNumber
 	ewWayBill.ContainerNumber = createEWWayBillRequest.ContainerNumber
 	ewWayBill.ServiceType = createEWWayBillRequest.ServiceType
-	ewWayBill.SupportiveDocuments = createEWWayBillRequest.SupportiveDocuments
+	ewWayBill.SupportiveDocumentsList = createEWWayBillRequest.SupportiveDocumentsList
 	ewWayBill.EwWayBillCreationDate = createEWWayBillRequest.EwWayBillCreationDate
 	ewWayBill.EwWayBillCreatedBy = createEWWayBillRequest.EwWayBillCreatedBy
 	ewWayBill.EwWayBillModifiedDate = createEWWayBillRequest.EwWayBillModifiedDate
