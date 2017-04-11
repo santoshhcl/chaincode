@@ -25,6 +25,15 @@ func CreateShipment(stub shim.ChaincodeStubInterface, args []string) ([]byte, er
 
 /************** Create Shipment Ends ************************/
 
+/************** Update Shipment Starts *********************/
+func UpdateShipment(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
+	fmt.Println("Entering Update Shipment", args[0])
+	shipmentRequest := parseShipmentWayBillRequest(args[0])
+	return saveShipmentWayBill(stub, shipmentRequest)
+}
+
+/************** Update Shipment Ends ************************/
+
 /************** Save Shipment WayBill Starts ****************/
 /*This is common code for Save Shipment,WayBill,DCShipment,DCWayBill*/
 
@@ -35,7 +44,7 @@ func parseShipmentWayBillRequest(jsondata string) ShipmentWayBill {
 	return res
 }
 func saveShipmentWayBill(stub shim.ChaincodeStubInterface, createShipmentWayBillRequest ShipmentWayBill) ([]byte, error) {
-
+	fmt.Println("way Bill no ", createShipmentWayBillRequest.WayBillNumber)
 	shipmentWayBill := ShipmentWayBill{}
 	shipmentWayBill.WayBillNumber = createShipmentWayBillRequest.WayBillNumber
 	shipmentWayBill.ShipmentNumber = createShipmentWayBillRequest.ShipmentNumber
@@ -76,7 +85,10 @@ func saveShipmentWayBill(stub shim.ChaincodeStubInterface, createShipmentWayBill
 	shipmentWayBill.WayBillCreatedBy = createShipmentWayBillRequest.WayBillCreatedBy
 	shipmentWayBill.WayBillModifiedDate = createShipmentWayBillRequest.WayBillModifiedDate
 	shipmentWayBill.WayBillModifiedBy = createShipmentWayBillRequest.WayBillModifiedBy
+	shipmentWayBill.Status = createShipmentWayBillRequest.Status
 	dataToStore, _ := json.Marshal(shipmentWayBill)
+	fmt.Println("shipmentWayBill============ ", shipmentWayBill)
+	fmt.Println("dataToStore============ ", dataToStore)
 
 	err := stub.PutState(shipmentWayBill.ShipmentNumber, []byte(dataToStore))
 	if err != nil {

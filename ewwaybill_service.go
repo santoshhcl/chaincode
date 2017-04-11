@@ -40,8 +40,8 @@ func CreateEWWayBill(stub shim.ChaincodeStubInterface, args []string) ([]byte, e
 			ewWayBillRequest.PalletsSerialNumber = append(ewWayBillRequest.ShipmentsNumber, dcShipmentData.PalletsSerialNumber[j])
 		}
 		if err != nil {
-			fmt.Println("Could not retrive Export Warehouse WayBill ", err)
-			return nil, err
+			fmt.Println("Could not retrive Shipment WayBill ", err)
+
 		}
 		wayBills, _ := fetchEntityWayBillMappingData(stub, ewWayBillRequest.Consigner)
 		var tmpWayBillArray []string
@@ -88,7 +88,7 @@ func saveEWWayBill(stub shim.ChaincodeStubInterface, createEWWayBillRequest EWWa
 	ewWayBill.VesselNumber = createEWWayBillRequest.VesselNumber
 	ewWayBill.ContainerNumber = createEWWayBillRequest.ContainerNumber
 	ewWayBill.ServiceType = createEWWayBillRequest.ServiceType
-	ewWayBill.SupportiveDocumentsList = createEWWayBillRequest.SupportiveDocumentsList
+	//ewWayBill.SupportiveDocumentsList = createEWWayBillRequest.SupportiveDocumentsList
 	ewWayBill.EwWayBillCreationDate = createEWWayBillRequest.EwWayBillCreationDate
 	ewWayBill.EwWayBillCreatedBy = createEWWayBillRequest.EwWayBillCreatedBy
 	ewWayBill.EwWayBillModifiedDate = createEWWayBillRequest.EwWayBillModifiedDate

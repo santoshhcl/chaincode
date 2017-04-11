@@ -97,6 +97,12 @@ type PalletDetails struct {
 	EwWayBillDate      string
 }
 
+
+type AllShipmentWayBills struct {
+	AllWayBillNumber []string `json:"allWayBillNumber"`
+}
+
+
 /*This is common struct across Shipment and Waybill*/
 type ShipmentWayBill struct {
 	WayBillNumber         string   `json:"wayBillNumber"`
@@ -105,6 +111,7 @@ type ShipmentWayBill struct {
 	CountryTo             string   `json:"countryTo"`
 	Consigner             string   `json:"consigner"`
 	Consignee             string   `json:"consignee"`
+	Status             	  string   `json:"status"`
 	Custodian             string   `json:"custodian"`
 	CustodianHistory      []string `json:"custodianHistory"`
 	PersonConsigningGoods string   `json:"personConsigningGoods"`
@@ -140,6 +147,13 @@ type ShipmentWayBill struct {
 	WayBillModifiedBy     string   `json:"wayBillModifiedBy"`
 }
 
+
+
+type AllEWWayBill struct {
+	AllWayBillNumber []string `json:"allWayBillNumber"`
+}
+
+
 type EWWayBill struct {
 	EwWayBillNumber       string
 	WayBillsNumber        []string
@@ -149,6 +163,7 @@ type EWWayBill struct {
 	Consigner             string
 	Consignee             string
 	Custodian             string
+	Status             	  string 
 	CustodianHistory      []string
 	CustodianTime         string
 	PersonConsigningGoods string
