@@ -46,9 +46,9 @@ func (t *InboxService) createShipmentArray(stub shim.ChaincodeStubInterface, tmp
 	var shipmentWayBillArray []ShipmentWayBill
 
 	shipmentWayBillIndex, err = FetchShipmentWayBillIndex(stub, "ShipmentWayBillIndex")
-
+	fmt.Println("shipmentWayBillIndex----------->", shipmentWayBillIndex)
 	lenOfArray := len(shipmentWayBillIndex.ShipmentNumber)
-
+	fmt.Println("shipmentWayBillIndex length----------->", lenOfArray)
 	for i := 0; i < lenOfArray; i++ {
 		var tmpShipmentWayBill ShipmentWayBill
 		tmpShipmentWayBill, err = fetchShipmentWayBillData(stub, shipmentWayBillIndex.ShipmentNumber[i])
@@ -58,6 +58,7 @@ func (t *InboxService) createShipmentArray(stub shim.ChaincodeStubInterface, tmp
 		}
 
 	}
+	fmt.Println("shipmentWayBillArray ----------->", shipmentWayBillArray)
 
 	return shipmentWayBillArray
 }
