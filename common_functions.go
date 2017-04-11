@@ -493,10 +493,10 @@ func FetchShipmentWayBillIndex(stub shim.ChaincodeStubInterface, shipmentidkey s
 
 }
 
-func FetchEWWayBillIndex(stub shim.ChaincodeStubInterface) (AllEWWayBill, error) {
+func FetchEWWayBillIndex(stub shim.ChaincodeStubInterface, ewwaybillKey string) (AllEWWayBill, error) {
 	var shipmentWayBill AllEWWayBill
 
-	indexByte, err := stub.GetState("AllEWWayBill")
+	indexByte, err := stub.GetState(ewwaybillKey)
 	if err != nil {
 		fmt.Println("Could not retrive  Shipment WayBill ", err)
 		return shipmentWayBill, err
