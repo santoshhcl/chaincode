@@ -96,6 +96,17 @@ func saveShipmentWayBill(stub shim.ChaincodeStubInterface, createShipmentWayBill
 		return nil, err
 	}
 
+	shipmentwaybillidsRequest := ShipmentWayBillIndex{}
+	shipmentwaybillids, err := FetchShipmentWayBillIndex(stub, "ShipmentWayBillIndex")
+	fmt.Println("shipment ids.....", shipmentwaybillids)
+	if err != nil {
+		shipmentwaybillidsRequest.ShipmentNumber = append(shipmentwaybillidsRequest.ShipmentNumber, shipmentWayBill.ShipmentNumber)
+		SaveShipmentWaybillIndex(stub, shipmentwaybillidsRequest)
+	} else {
+		shipmentwaybillidsRequest.ShipmentNumber = append(shipmentwaybillids.ShipmentNumber, shipmentWayBill.ShipmentNumber)
+		fmt.Println("Updated entity shipmentwaybillindex", shipmentwaybillidsRequest)
+		SaveShipmentWaybillIndex(stub, shipmentwaybillidsRequest)
+	}
 	resp := BlockchainResponse{}
 	resp.Err = "000"
 	resp.Message = shipmentWayBill.ShipmentNumber

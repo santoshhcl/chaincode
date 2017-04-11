@@ -10,7 +10,8 @@ UpdateAssetDetails
 UpdateCartonDetails
 UpdatePalletDetails
 UpdatePalletCartonAssetByWayBill
-
+FetchShipmentWayBillIndex
+FetchEWWayBillIndex
 Author: Mohd Arshad
 Dated: 30/7/2017
 /*****************************************************/
@@ -472,3 +473,79 @@ func UpdatePalletCartonAssetByWayBill(stub shim.ChaincodeStubInterface, wayBillR
 }
 
 /************** Update Pallet Carton Asset Details  Ends ************************/
+
+//******************fetch shipmentwaybillIndex****************//
+func FetchShipmentWayBillIndex(stub shim.ChaincodeStubInterface, shipmentidkey string) (ShipmentWayBillIndex, error) {
+	var shipmentWayBill ShipmentWayBillIndex
+
+	indexByte, err := stub.GetState(shipmentidkey)
+	if err != nil {
+		fmt.Println("Could not retrive  Shipment WayBill ", err)
+		return shipmentWayBill, err
+	}
+
+	if marshErr := json.Unmarshal(indexByte, &shipmentWayBill); marshErr != nil {
+		fmt.Println("Could not retrieve Shipment WayBill from ledger", marshErr)
+		return shipmentWayBill, marshErr
+	}
+
+	return shipmentWayBill, nil
+
+}
+
+func FetchEWWayBillIndex(stub shim.ChaincodeStubInterface) (AllEWWayBill, error) {
+	var shipmentWayBill AllEWWayBill
+
+	indexByte, err := stub.GetState("AllEWWayBill")
+	if err != nil {
+		fmt.Println("Could not retrive  Shipment WayBill ", err)
+		return shipmentWayBill, err
+	}
+
+	if marshErr := json.Unmarshal(indexByte, &shipmentWayBill); marshErr != nil {
+		fmt.Println("Could not retrieve Shipment WayBill from ledger", marshErr)
+		return shipmentWayBill, marshErr
+	}
+
+	return shipmentWayBill, nil
+
+}
+
+func SaveShipmentWaybillIndex(stub shim.ChaincodeStubInterface, shipmentids ShipmentWayBillIndex) ([]byte, error) {
+	dataToStore, _ := json.Marshal(shipmentids)
+	fmt.Println("save shipmentwaybillids..", dataToStore)
+	err := stub.PutState("ShipmentWayBillIndex", []byte(dataToStore))
+	if err != nil {
+		fmt.Println("Could not save shipmentindex to ledger", err)
+		return nil, err
+	}
+
+	resp := BlockchainResponse{}
+	resp.Err = "000"
+	resp.Message = "ShipmentWayBillIndex"
+	respString, _ := json.Marshal(resp)
+
+	fmt.Println("Successfully saved ShipmentWayBillIndex IDs")
+	return []byte(respString), nil
+
+}
+func SaveEWWaybillIndex(stub shim.ChaincodeStubInterface, ewwaybillids AllEWWayBill) ([]byte, error) {
+	dataToStore, _ := json.Marshal(ewwaybillids)
+	fmt.Println("save ewwaybillids..", dataToStore)
+	err := stub.PutState("AllEWWayBill", []byte(dataToStore))
+	if err != nil {
+		fmt.Println("Could not save shipmentindex to ledger", err)
+		return nil, err
+	}
+
+	resp := BlockchainResponse{}
+	resp.Err = "000"
+	resp.Message = "shipmentindex"
+	respString, _ := json.Marshal(resp)
+
+	fmt.Println("Successfully saved shipmentindex IDs")
+	return []byte(respString), nil
+
+}
+
+/////////////////////////////////////
