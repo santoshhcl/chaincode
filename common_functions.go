@@ -484,7 +484,7 @@ func FetchShipmentWayBillIndex(stub shim.ChaincodeStubInterface, shipmentidkey s
 		return shipmentWayBill, err
 	}
 
-	fmt.Println("shipmentWayBill : ", string(indexByte), "index---->"+indexByte)
+	fmt.Println("shipmentWayBill : ", string(indexByte), "index---->", indexByte)
 
 	json.Unmarshal(indexByte, &shipmentWayBill)
 
