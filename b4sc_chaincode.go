@@ -149,7 +149,7 @@ are not touched as of now to avoid break of any functionality devloped by Kartik
 
 //Will be avlable in the WorldStats as "ShipmentWayBillIndex"
 type ShipmentWayBillIndex struct {
-	ShipmentNumber []string
+	ShipmentNumber		[]string		`json:"shipmentNumber"`
 }
 
 //Will be avlable in the WorldStats as "WayBillNumberIndex"

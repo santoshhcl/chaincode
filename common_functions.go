@@ -484,10 +484,18 @@ func FetchShipmentWayBillIndex(stub shim.ChaincodeStubInterface, shipmentidkey s
 		return shipmentWayBill, err
 	}
 
-	if marshErr := json.Unmarshal(indexByte, &shipmentWayBill); marshErr != nil {
+	fmt.Println("shipmentWayBill : ", string(indexByte), "index---->"+indexByte)
+
+	json.Unmarshal(indexByte, &shipmentWayBill)
+
+	/*if marshErr := ; marshErr != nil {
 		fmt.Println("Could not retrieve Shipment WayBill from ledger", marshErr)
 		return shipmentWayBill, marshErr
-	}
+	}*/
+
+	fmt.Println("======================")
+	fmt.Println("shipmentwaybill index after unmarshal--->", shipmentWayBill)
+	fmt.Println("======================")
 
 	return shipmentWayBill, nil
 
@@ -502,10 +510,11 @@ func FetchEWWayBillIndex(stub shim.ChaincodeStubInterface, ewwaybillKey string) 
 		return shipmentWayBill, err
 	}
 
-	if marshErr := json.Unmarshal(indexByte, &shipmentWayBill); marshErr != nil {
-		fmt.Println("Could not retrieve Shipment WayBill from ledger", marshErr)
-		return shipmentWayBill, marshErr
-	}
+	json.Unmarshal(indexByte, &shipmentWayBill)
+
+	fmt.Println("======================")
+	fmt.Println(shipmentWayBill)
+	fmt.Println("======================")
 
 	return shipmentWayBill, nil
 

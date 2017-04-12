@@ -147,10 +147,11 @@ func fetchShipmentWayBillData(stub shim.ChaincodeStubInterface, shipmentNo strin
 		return shipmentWayBill, err
 	}
 
-	if marshErr := json.Unmarshal(indexByte, &shipmentWayBill); marshErr != nil {
-		fmt.Println("Could not retrieve Shipment WayBill from ledger", marshErr)
-		return shipmentWayBill, marshErr
-	}
+	json.Unmarshal(indexByte, &shipmentWayBill)
+
+	fmt.Println("======================shipment data-->")
+	fmt.Println(shipmentWayBill)
+	fmt.Println("======================")
 
 	return shipmentWayBill, nil
 
