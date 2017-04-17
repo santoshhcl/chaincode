@@ -632,6 +632,7 @@ func UpdateEWWaybillCustodianHistoryList(stub shim.ChaincodeStubInterface, ewway
 		fmt.Println("custodianHistory for ewwaybill already not available-->")
 		custodianHistory.CustodianHistoryList = append(custodianHistory.CustodianHistoryList, custodianHistoryDetail)
 	} else {
+		json.Unmarshal(indexwaybill, &tmpewwaybill)
 		fmt.Println("custodianHistory for ew already available-->", ewwayBill.CustodianHistory)
 		custodianHistory.CustodianHistoryList = append(tmpewwaybill.CustodianHistory.CustodianHistoryList, custodianHistoryDetail)
 
