@@ -123,19 +123,6 @@ func fetchEntityWayBillMappingData(stub shim.ChaincodeStubInterface, entityName 
 
 /************** Create WayBill Shipment Mapping Starts ************************/
 
-func CreateWayBillShipmentMapping(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
-	fmt.Println("Entering Create WayBill Shipment Mapping")
-	wayBillShipmentMapping := parseWayBillShipmentMapping(args[0])
-
-	return saveWayBillShipmentMapping(stub, wayBillShipmentMapping)
-
-}
-func parseWayBillShipmentMapping(jsondata string) WayBillShipmentMapping {
-	res := WayBillShipmentMapping{}
-	json.Unmarshal([]byte(jsondata), &res)
-	fmt.Println(res)
-	return res
-}
 func saveWayBillShipmentMapping(stub shim.ChaincodeStubInterface, craeteWayBillShipmentMappingRequest WayBillShipmentMapping) ([]byte, error) {
 
 	wayBillShipmentMapping := WayBillShipmentMapping{}
@@ -163,21 +150,8 @@ func saveWayBillShipmentMapping(stub shim.ChaincodeStubInterface, craeteWayBillS
 /************** Create WayBill Shipment Ends ************************/
 
 /************** Get  WayBill Shipment Mapping Starts ************************/
-func GetWayBillShipmentMapping(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
-	fmt.Println("Entering Get Entity WayBill Mapping")
-	wayBillNumber := args[0]
-	wayBillShippingMappingData, dataerr := fetchEntityWayBillMappingData(stub, wayBillNumber)
-	if dataerr == nil {
 
-		dataToStore, _ := json.Marshal(wayBillShippingMappingData)
-		return []byte(dataToStore), nil
-
-	}
-
-	return nil, dataerr
-}
-
-func fetchWayBillShipmentMappingData(stub shim.ChaincodeStubInterface, wayBillNumber string) (WayBillShipmentMapping, error) {
+func FetchWayBillShipmentMappingData(stub shim.ChaincodeStubInterface, wayBillNumber string) (WayBillShipmentMapping, error) {
 	var wayBillShipmentMapping WayBillShipmentMapping
 
 	indexByte, err := stub.GetState(wayBillNumber)
@@ -185,13 +159,8 @@ func fetchWayBillShipmentMappingData(stub shim.ChaincodeStubInterface, wayBillNu
 		fmt.Println("Could not retrive WayBill Shipping Mapping ", err)
 		return wayBillShipmentMapping, err
 	}
-
-	if marshErr := json.Unmarshal(indexByte, &wayBillShipmentMapping); marshErr != nil {
-		fmt.Println("Could not retrieve Entity WayBill Mapping from ledger", marshErr)
-		return wayBillShipmentMapping, marshErr
-	}
-
-	return wayBillShipmentMapping, nil
+	json.Unmarshal(indexByte, &wayBillShipmentMapping)
+	return wayBillShipmentMapping, err
 
 }
 

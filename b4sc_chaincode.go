@@ -149,7 +149,7 @@ are not touched as of now to avoid break of any functionality devloped by Kartik
 
 //Will be avlable in the WorldStats as "ShipmentWayBillIndex"
 type ShipmentWayBillIndex struct {
-	ShipmentNumber		[]string		`json:"shipmentNumber"`
+	ShipmentNumber []string `json:"shipmentNumber"`
 }
 
 //Will be avlable in the WorldStats as "WayBillNumberIndex"
@@ -906,6 +906,8 @@ func (t *B4SCChaincode) Invoke(stub shim.ChaincodeStubInterface, function string
 		return CreateDCWayBill(stub, args)
 	} else if function == "CreateEWWayBill" {
 		return CreateEWWayBill(stub, args)
+	} else if function == "UpdateEWWayBill" {
+		return UpdateEWWayBill(stub, args)
 	} else if function == "CreateEntityWayBillMapping" {
 		return CreateEntityWayBillMapping(stub, args)
 	} else if function == "CreateAsset" {
@@ -929,8 +931,8 @@ func (t *B4SCChaincode) Invoke(stub shim.ChaincodeStubInterface, function string
 }
 
 func (t *B4SCChaincode) Query(stub shim.ChaincodeStubInterface, function string, args []string) ([]byte, error) {
-	fmt.Println("Query : function : "+function+" args : "+args[0])
-	
+	fmt.Println("Query : function : " + function + " args : " + args[0])
+
 	if function == "ViewDataForKey" {
 		return ViewDataForKey(stub, args)
 	} else if function == "Inbox" {
@@ -955,7 +957,7 @@ func (t *B4SCChaincode) Query(stub shim.ChaincodeStubInterface, function string,
 		return GetCarton(stub, args)
 	} else if function == "ViewShipmentWayBill" {
 		return ViewShipmentWayBill(stub, args)
-	}  else if function == "getAllComplianceDocument" {
+	} else if function == "getAllComplianceDocument" {
 		return getAllComplianceDocument(stub, args)
 	} else if function == "SearchDateRange" {
 		return SearchDateRange(stub, args)
@@ -965,6 +967,9 @@ func (t *B4SCChaincode) Query(stub shim.ChaincodeStubInterface, function string,
 		return SearchCarton(stub, args)
 	} else if function == "SearchAsset" {
 		return SearchAsset(stub, args)
+	} else if function == "GetCountryWarehouse" {
+		var pageLoadService ShipmentPageLoadService
+		return pageLoadService.GetCountryWarehouse(stub, args)
 	}
 	return nil, errors.New("Invalid function name " + function)
 
