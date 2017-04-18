@@ -175,7 +175,7 @@ type EWWayBill struct {
 	VesselNumber          string
 	ContainerNumber       string
 	ServiceType           string
-	SupportiveDocuments   []string
+	SupportiveDocuments   []SupportiveDocumentsList `json:"supportiveDocumentsList"`
 	EwWayBillCreationDate string
 	EwWayBillCreatedBy    string
 	EwWayBillModifiedDate string
