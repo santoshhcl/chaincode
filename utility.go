@@ -65,7 +65,7 @@ func (t *Utility) fetchShipmentIndex(stub shim.ChaincodeStubInterface, callingEn
 		var shipmentData ShipmentWayBill
 		tmpShipmentIndex = shipmentIndexArr[i]
 		shipmentData, err = util.fetchShipmentData(stub, tmpShipmentIndex)
-		if err == nil && ((shipmentData.Custodian == callingEntityName && status != "ALL") || (util.hasCustodian(shipmentData.CustodianHistory.CustodianHistoryList, callingEntityName) && status == "ALL")) {
+		if err == nil && ((shipmentData.Custodian == callingEntityName && status != "ALL") || (util.hasCustodian(shipmentData.CustodianHistory, callingEntityName) && status == "ALL")) {
 			shipmentDataArray = append(shipmentDataArray, shipmentData)
 		}
 
