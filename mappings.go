@@ -36,7 +36,7 @@ func saveEntityWayBillMapping(stub shim.ChaincodeStubInterface, createEntityWayB
 
 	dataToStore, _ := json.Marshal(entityWayBillMapping)
 
-	err := stub.PutState(createEntityWayBillMappingRequest.EntityName, []byte(dataToStore))
+	err := DumpData(stub, createEntityWayBillMappingRequest.EntityName, string(dataToStore))
 	if err != nil {
 		fmt.Println("Could not save Entity WayBill Mapping to ledger", err)
 		return nil, err
@@ -69,8 +69,8 @@ func UpdateEntityWayBillMapping(stub shim.ChaincodeStubInterface, entityName str
 		entityWayBillMappingRequest.WayBillsNumber = append(entityWayBillMapping.WayBillsNumber, wayBillsNumber)
 		fmt.Println("Updated Entity", entityWayBillMappingRequest)
 		dataToStore, _ := json.Marshal(entityWayBillMappingRequest)
-		err := stub.PutState(entityName, []byte(dataToStore))
-		if err != nil {
+		err := DumpData(stub, entityName, string(dataToStore))
+ 		if err != nil {
 			fmt.Println("Could not save Entity WayBill Mapping to ledger", err)
 			return nil, err
 		}
@@ -130,7 +130,7 @@ func saveWayBillShipmentMapping(stub shim.ChaincodeStubInterface, craeteWayBillS
 	wayBillShipmentMapping.DCShipmentNumber = craeteWayBillShipmentMappingRequest.DCShipmentNumber
 	dataToStore, _ := json.Marshal(wayBillShipmentMapping)
 
-	err := stub.PutState(wayBillShipmentMapping.DCWayBillsNumber, []byte(dataToStore))
+	err := DumpData(stub, wayBillShipmentMapping.DCWayBillsNumber, string(dataToStore))
 	if err != nil {
 		fmt.Println("Could not save WayBill Shipment Mapping to ledger", err)
 		return nil, err

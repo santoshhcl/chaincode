@@ -53,13 +53,16 @@ type ShipmentPageLoadResponse struct {
 type CountryEntityMappingRequest struct {
 	CountryFrom string `json:"countryFrom"`
 }
+type CountryEntityMappingResponse struct {
+	WareHouseList []ConsigneeShipmentPageLoadResponse `json:"wareHouseList"`
+}
 
 func (t *ShipmentPageLoadService) GetCountryWarehouse(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
 	fmt.Println("Entering GetCountryWarehouse New " + args[0])
 	var thisClass ShipmentPageLoadService
 
 	var err error
-	var consigneeArr []ConsigneeShipmentPageLoadResponse
+	var consigneeArr CountryEntityMappingResponse
 	var allEntities AllEntities
 	request := CountryEntityMappingRequest{}
 
@@ -83,13 +86,13 @@ func (t *ShipmentPageLoadService) GetCountryWarehouse(stub shim.ChaincodeStubInt
 					tmpConsigneeResponse.ConsigneeAddress = tmpEntity.EntityAddress
 					tmpConsigneeResponse.ConsigneeCountry = tmpEntity.EntityCountry
 					tmpConsigneeResponse.ConsigneeRegNumber = tmpEntity.EntityRegNumber
-					consigneeArr = append(consigneeArr, tmpConsigneeResponse)
+					consigneeArr.WareHouseList = append(consigneeArr.WareHouseList, tmpConsigneeResponse)
 				}
 			}
 		}
 	} else {
 		fmt.Println("Error while fetching workflow data", err)
-		return json.Marshal(consigneeArr)
+		return json.Marshal(consigneeArr.WareHouseList)
 	}
 
 	fmt.Println("consigneeArr : ======================")
@@ -97,8 +100,8 @@ func (t *ShipmentPageLoadService) GetCountryWarehouse(stub shim.ChaincodeStubInt
 	fmt.Println("consigneeArr : ======================")
 
 	fmt.Println("Exiting GetCountryWarehouse ")
-
-	return json.Marshal(consigneeArr)
+	datatoreturn, _ := json.Marshal(consigneeArr.WareHouseList)
+	return []byte(datatoreturn), nil
 
 }
 

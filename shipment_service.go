@@ -104,7 +104,7 @@ func saveShipmentWayBill(stub shim.ChaincodeStubInterface, createShipmentWayBill
 	fmt.Println("shipmentWayBill============ ", shipmentWayBill)
 	fmt.Println("dataToStore============ ", dataToStore)
 
-	err := stub.PutState(shipmentWayBill.ShipmentNumber, []byte(dataToStore))
+	err := DumpData(stub, shipmentWayBill.ShipmentNumber, string(dataToStore))
 	if err != nil {
 		fmt.Println("Could not save WayBill to ledger", err)
 		return nil, err

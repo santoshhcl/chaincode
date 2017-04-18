@@ -111,7 +111,7 @@ type ShipmentWayBill struct {
 	Consignee             string                    `json:"consignee"`
 	Status                string                    `json:"status"`
 	Custodian             string                    `json:"custodian"`
-	CustodianHistory      CustodianHistory          `json:"custodianHistory"`
+	CustodianHistory      []CustodianHistoryDetail  `json:"custodianHistory"`
 	PersonConsigningGoods string                    `json:"personConsigningGoods"`
 	Comments              string                    `json:"comments"`
 	TpComments            string                    `json:"tpComments"`
@@ -163,7 +163,7 @@ type EWWayBill struct {
 	Consignee             string
 	Custodian             string
 	Status                string
-	CustodianHistory      CustodianHistory `json:"custodianHistory"`
+	CustodianHistory      []CustodianHistoryDetail `json:"custodianHistory"`
 	CustodianTime         string
 	PersonConsigningGoods string
 	Comments              string

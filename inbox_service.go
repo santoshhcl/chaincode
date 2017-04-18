@@ -56,7 +56,7 @@ func (t *InboxService) createShipmentArray(stub shim.ChaincodeStubInterface, tmp
 			fmt.Println("Error while retrieveing the shipment details for shipmentid", shipmentWayBillIndex.ShipmentNumber[i], "error-->", err)
 			return shipmentWayBillArray
 		}
-		if err == nil && t.checkInboxCondition(tmpEntity.EntityId, tmpEntity.EntityType, inboxName, tmpShipmentWayBill.Status, tmpShipmentWayBill.Consigner, tmpShipmentWayBill.Consignee, tmpShipmentWayBill.Carrier, tmpShipmentWayBill.CustodianHistory.CustodianHistoryList, tmpShipmentWayBill.Custodian) == "true" {
+		if err == nil && t.checkInboxCondition(tmpEntity.EntityId, tmpEntity.EntityType, inboxName, tmpShipmentWayBill.Status, tmpShipmentWayBill.Consigner, tmpShipmentWayBill.Consignee, tmpShipmentWayBill.Carrier, tmpShipmentWayBill.CustodianHistory, tmpShipmentWayBill.Custodian) == "true" {
 			shipmentWayBillArray = append(shipmentWayBillArray, tmpShipmentWayBill)
 			fmt.Println("shipmentWayBillArray--->", shipmentWayBillArray)
 		}
@@ -71,16 +71,17 @@ func (t *InboxService) createEWWayBillArray(stub shim.ChaincodeStubInterface, tm
 	var allEWWayBillIndex AllEWWayBill
 	var err error
 	var shipmentWayBillArray []EWWayBill
-
+	fmt.Println("createEWWaybillArray.........starting")
 	allEWWayBillIndex, err = FetchEWWayBillIndex(stub, "AllEWWayBill")
+	fmt.Println("allEWWayBillIndex.........", allEWWayBillIndex)
 
 	lenOfArray := len(allEWWayBillIndex.AllWayBillNumber)
 
 	for i := 0; i < lenOfArray; i++ {
 		var tmpShipmentWayBill EWWayBill
 		tmpShipmentWayBill, err = fetchEWWayBillData(stub, allEWWayBillIndex.AllWayBillNumber[i])
-
-		if err != nil && t.checkInboxCondition(tmpEntity.EntityId, tmpEntity.EntityType, inboxName, tmpShipmentWayBill.Status, tmpShipmentWayBill.Consigner, tmpShipmentWayBill.Consignee, "", tmpShipmentWayBill.CustodianHistory.CustodianHistoryList, tmpShipmentWayBill.Custodian) == "true" {
+		fmt.Println("tmpShipmentWayBill---------->", tmpShipmentWayBill)
+		if err != nil && t.checkInboxCondition(tmpEntity.EntityId, tmpEntity.EntityType, inboxName, tmpShipmentWayBill.Status, tmpShipmentWayBill.Consigner, tmpShipmentWayBill.Consignee, "", tmpShipmentWayBill.CustodianHistory, tmpShipmentWayBill.Custodian) == "true" {
 			shipmentWayBillArray = append(shipmentWayBillArray, tmpShipmentWayBill)
 		}
 

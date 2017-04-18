@@ -48,7 +48,7 @@ func CreateDCWayBill(stub shim.ChaincodeStubInterface, args []string) ([]byte, e
 
 	UpdatePalletCartonAssetByWayBill(stub, dcwayBillRequest, DCWAYBILL, "")
 	UpdateEntityWayBillMapping(stub, dcshipmentDetails.EntityName, dcshipmentDetails.WayBillNumber)
-	err = stub.PutState(dcshipmentDetails.WayBillNumber, []byte(dcwayBillRequest.ShipmentNumber))
+	err = DumpData(stub, dcshipmentDetails.WayBillNumber, dcwayBillRequest.ShipmentNumber)
 	if err != nil {
 		fmt.Println("Could not save WayBill to ledger", err)
 		return nil, err

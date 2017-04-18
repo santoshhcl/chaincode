@@ -68,7 +68,7 @@ func saveAssetDetails(stub shim.ChaincodeStubInterface, createAssetDetailsReques
 
 	dataToStore, _ := json.Marshal(assetDetails)
 
-	err := stub.PutState(assetDetails.AssetSerialNumber, []byte(dataToStore))
+	err := DumpData(stub, assetDetails.AssetSerialNumber, string(dataToStore))
 	if err != nil {
 		fmt.Println("Could not save Assets Details to ledger", err)
 		return nil, err
@@ -124,7 +124,7 @@ func saveCartonDetails(stub shim.ChaincodeStubInterface, createCartonDetailsRequ
 	cartonDetails.EwWayBillDate = createCartonDetailsRequest.EwWayBillDate
 	dataToStore, _ := json.Marshal(cartonDetails)
 
-	err := stub.PutState(cartonDetails.CartonSerialNumber, []byte(dataToStore))
+	err := DumpData(stub, cartonDetails.CartonSerialNumber, string(dataToStore))
 	if err != nil {
 		fmt.Println("Could not save Carton Details to ledger", err)
 		return nil, err
@@ -179,7 +179,7 @@ func savePalletDetails(stub shim.ChaincodeStubInterface, createPalletDetailsRequ
 	palletDetails.EwWayBillDate = createPalletDetailsRequest.EwWayBillDate
 	dataToStore, _ := json.Marshal(palletDetails)
 
-	err := stub.PutState(palletDetails.PalletSerialNumber, []byte(dataToStore))
+	err := DumpData(stub, palletDetails.PalletSerialNumber, string(dataToStore))
 	if err != nil {
 		fmt.Println("Could not save Pallet Details to ledger", err)
 		return nil, err
@@ -318,7 +318,7 @@ func UpdateAssetDetails(stub shim.ChaincodeStubInterface, args []string) ([]byte
 
 	fmt.Println("Updated Entity", assetDetails)
 	dataToStore, _ := json.Marshal(assetDetails)
-	err := stub.PutState(AssetSerialNumber, []byte(dataToStore))
+	err := DumpData(stub, AssetSerialNumber, string(dataToStore))
 	if err != nil {
 		fmt.Println("Could not save Entity WayBill Mapping to ledger", err)
 		return nil, err
@@ -346,7 +346,7 @@ func UpdateCartonDetails(stub shim.ChaincodeStubInterface, args []string) ([]byt
 	cartonDetails.MwayBillNumber = wayBillNumber
 	fmt.Println("Updated Entity", cartonDetails)
 	dataToStore, _ := json.Marshal(cartonDetails)
-	err := stub.PutState(cartonSerialNo, []byte(dataToStore))
+	err := DumpData(stub, cartonSerialNo, string(dataToStore))
 	if err != nil {
 		fmt.Println("Could not save Pallet Details to ledger", err)
 		return nil, err
@@ -373,7 +373,7 @@ func UpdatePalletDetails(stub shim.ChaincodeStubInterface, args []string) ([]byt
 	palletDetails.MwayBillNumber = wayBillNumber
 	fmt.Println("Updated Entity", palletDetails)
 	dataToStore, _ := json.Marshal(palletDetails)
-	err := stub.PutState(palletSerialNo, []byte(dataToStore))
+	err := DumpData(stub, palletSerialNo, string(dataToStore))
 	if err != nil {
 		fmt.Println("Could not save Pallet Details to ledger", err)
 		return nil, err
@@ -534,7 +534,7 @@ func FetchEWWayBillIndex(stub shim.ChaincodeStubInterface, ewwaybillKey string) 
 func SaveShipmentWaybillIndex(stub shim.ChaincodeStubInterface, shipmentids ShipmentWayBillIndex) ([]byte, error) {
 	dataToStore, _ := json.Marshal(shipmentids)
 	fmt.Println("save shipmentwaybillids..", dataToStore)
-	err := stub.PutState("ShipmentWayBillIndex", []byte(dataToStore))
+	err := DumpData(stub, "ShipmentWayBillIndex", string(dataToStore))
 	if err != nil {
 		fmt.Println("Could not save shipmentindex to ledger", err)
 		return nil, err
@@ -552,7 +552,7 @@ func SaveShipmentWaybillIndex(stub shim.ChaincodeStubInterface, shipmentids Ship
 func SaveEWWaybillIndex(stub shim.ChaincodeStubInterface, ewwaybillids AllEWWayBill) ([]byte, error) {
 	dataToStore, _ := json.Marshal(ewwaybillids)
 	fmt.Println("save ewwaybillids..", dataToStore)
-	err := stub.PutState("AllEWWayBill", []byte(dataToStore))
+	err := DumpData(stub, "AllEWWayBill", string(dataToStore))
 	if err != nil {
 		fmt.Println("Could not save shipmentindex to ledger", err)
 		return nil, err
@@ -571,7 +571,7 @@ func SaveEWWaybillIndex(stub shim.ChaincodeStubInterface, ewwaybillids AllEWWayB
 /////////////////////////////////////
 ///Update Cuustodian
 
-func UpdateShipmentCustodianHistoryList(stub shim.ChaincodeStubInterface, shipmentwaybill ShipmentWayBill) CustodianHistory {
+func UpdateShipmentCustodianHistoryList(stub shim.ChaincodeStubInterface, shipmentwaybill ShipmentWayBill) []CustodianHistoryDetail {
 	var custodianHistoryDetail CustodianHistoryDetail
 	custodianHistoryDetail.CustodianName = shipmentwaybill.Custodian
 	if shipmentwaybill.WayBillNumber == "" {
@@ -581,41 +581,41 @@ func UpdateShipmentCustodianHistoryList(stub shim.ChaincodeStubInterface, shipme
 		custodianHistoryDetail.Comments = shipmentwaybill.TpComments
 		custodianHistoryDetail.CustodianTime = shipmentwaybill.WayBillCreationDate
 	}
-	var custodianHistory CustodianHistory
+	var custodianHistoryDetailList []CustodianHistoryDetail
 	indexbyte, err := stub.GetState(shipmentwaybill.ShipmentNumber)
 	var tmpshipmentwaybill ShipmentWayBill
 	if err != nil {
 		fmt.Println("custodianHistory already not available-->")
-		custodianHistory.CustodianHistoryList = append(custodianHistory.CustodianHistoryList, custodianHistoryDetail)
+		custodianHistoryDetailList = append(custodianHistoryDetailList, custodianHistoryDetail)
 	} else {
 		json.Unmarshal(indexbyte, &tmpshipmentwaybill)
 		fmt.Println("custodianHistory already available-->", shipmentwaybill.CustodianHistory)
-		custodianHistory.CustodianHistoryList = append(tmpshipmentwaybill.CustodianHistory.CustodianHistoryList, custodianHistoryDetail)
+		custodianHistoryDetailList = append(tmpshipmentwaybill.CustodianHistory, custodianHistoryDetail)
 
 	}
-	return custodianHistory
+	return custodianHistoryDetailList
 }
-func UpdateShipmentCustodianHistoryListForeWWaybill(stub shim.ChaincodeStubInterface, custodianName string, comment string, custodianTime string, shipmentNumber string) CustodianHistory {
+func UpdateShipmentCustodianHistoryListForeWWaybill(stub shim.ChaincodeStubInterface, custodianName string, comment string, custodianTime string, shipmentNumber string) []CustodianHistoryDetail {
 	var custodianHistoryDetail CustodianHistoryDetail
 	custodianHistoryDetail.CustodianName = custodianName
 	custodianHistoryDetail.Comments = comment
 	custodianHistoryDetail.CustodianTime = custodianTime
 
-	var custodianHistory CustodianHistory
+	var custodianHistoryDetailList []CustodianHistoryDetail
 	indexbyte, err := stub.GetState(shipmentNumber)
 	var tmpshipmentwaybill ShipmentWayBill
 	if err != nil {
 		fmt.Println("custodianHistory already  not available-->")
-		custodianHistory.CustodianHistoryList = append(custodianHistory.CustodianHistoryList, custodianHistoryDetail)
+		custodianHistoryDetailList = append(custodianHistoryDetailList, custodianHistoryDetail)
 	} else {
 		fmt.Println("custodianHistory already available-->", tmpshipmentwaybill.CustodianHistory)
 		json.Unmarshal(indexbyte, &tmpshipmentwaybill)
-		custodianHistory.CustodianHistoryList = append(tmpshipmentwaybill.CustodianHistory.CustodianHistoryList, custodianHistoryDetail)
+		custodianHistoryDetailList = append(tmpshipmentwaybill.CustodianHistory, custodianHistoryDetail)
 
 	}
-	return custodianHistory
+	return custodianHistoryDetailList
 }
-func UpdateEWWaybillCustodianHistoryList(stub shim.ChaincodeStubInterface, ewwayBill EWWayBill) CustodianHistory {
+func UpdateEWWaybillCustodianHistoryList(stub shim.ChaincodeStubInterface, ewwayBill EWWayBill) []CustodianHistoryDetail {
 	var custodianHistoryDetail CustodianHistoryDetail
 	custodianHistoryDetail.CustodianName = ewwayBill.Custodian
 	if ewwayBill.EwWayBillModifiedDate == "" {
@@ -625,19 +625,19 @@ func UpdateEWWaybillCustodianHistoryList(stub shim.ChaincodeStubInterface, ewway
 		custodianHistoryDetail.Comments = ewwayBill.Comments
 		custodianHistoryDetail.CustodianTime = ewwayBill.EwWayBillModifiedDate
 	}
-	var custodianHistory CustodianHistory
+	var custodianHistoryDetailList []CustodianHistoryDetail
 	indexwaybill, err := stub.GetState(ewwayBill.EwWayBillNumber)
-	var tmpewwaybill ShipmentWayBill
+	var tmpewwaybill EWWayBill
 	if err != nil {
 		fmt.Println("custodianHistory for ewwaybill already not available-->")
-		custodianHistory.CustodianHistoryList = append(custodianHistory.CustodianHistoryList, custodianHistoryDetail)
+		custodianHistoryDetailList = append(custodianHistoryDetailList, custodianHistoryDetail)
 	} else {
 		json.Unmarshal(indexwaybill, &tmpewwaybill)
 		fmt.Println("custodianHistory for ew already available-->", ewwayBill.CustodianHistory)
-		custodianHistory.CustodianHistoryList = append(tmpewwaybill.CustodianHistory.CustodianHistoryList, custodianHistoryDetail)
+		custodianHistoryDetailList = append(tmpewwaybill.CustodianHistory, custodianHistoryDetail)
 
 	}
-	return custodianHistory
+	return custodianHistoryDetailList
 }
 
 //End Update Custodian

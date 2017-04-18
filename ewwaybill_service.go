@@ -141,7 +141,7 @@ func saveEWWayBill(stub shim.ChaincodeStubInterface, createEWWayBillRequest EWWa
 
 	dataToStore, _ := json.Marshal(ewWayBill)
 
-	err := stub.PutState(ewWayBill.EwWayBillNumber, []byte(dataToStore))
+	err := DumpData(stub, ewWayBill.EwWayBillNumber, string(dataToStore))
 	if err != nil {
 		fmt.Println("Could not save Export Warehouse Way Bill to ledger", err)
 		return nil, err
