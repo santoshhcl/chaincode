@@ -96,6 +96,8 @@ func UpdateEWWayBill(stub shim.ChaincodeStubInterface, args []string) ([]byte, e
 		saveShipmentWayBill(stub, dcShipmentData)
 	}
 	ewWayBillRequest.CustodianHistory = UpdateEWWaybillCustodianHistoryList(stub, ewWayBillRequest)
+	emWayBilldata, dataerr := fetchEWWayBillData(stub, ewWayBillRequest.EwWayBillNumber)
+	ewWayBillRequest.SupportiveDocuments = emWayBilldata.SupportiveDocuments
 	saveResult, errMsg := saveEWWayBill(stub, ewWayBillRequest)
 	return saveResult, errMsg
 
