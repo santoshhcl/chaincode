@@ -65,6 +65,7 @@ func saveAssetDetails(stub shim.ChaincodeStubInterface, createAssetDetailsReques
 	assetDetails.MWayBillDate = createAssetDetailsRequest.MWayBillDate
 	assetDetails.DcWayBillDate = createAssetDetailsRequest.DcWayBillDate
 	assetDetails.EwWayBillDate = createAssetDetailsRequest.EwWayBillDate
+	fmt.Println("assetDetails data to update-->", assetDetails)
 
 	dataToStore, _ := json.Marshal(assetDetails)
 
@@ -122,6 +123,7 @@ func saveCartonDetails(stub shim.ChaincodeStubInterface, createCartonDetailsRequ
 	cartonDetails.MWayBillDate = createCartonDetailsRequest.MWayBillDate
 	cartonDetails.DcWayBillDate = createCartonDetailsRequest.DcWayBillDate
 	cartonDetails.EwWayBillDate = createCartonDetailsRequest.EwWayBillDate
+	fmt.Println("cartondetails data update---->", cartonDetails)
 	dataToStore, _ := json.Marshal(cartonDetails)
 
 	err := DumpData(stub, cartonDetails.CartonSerialNumber, string(dataToStore))
@@ -177,6 +179,7 @@ func savePalletDetails(stub shim.ChaincodeStubInterface, createPalletDetailsRequ
 	palletDetails.MWayBillDate = createPalletDetailsRequest.MWayBillDate
 	palletDetails.DcWayBillDate = createPalletDetailsRequest.DcWayBillDate
 	palletDetails.EwWayBillDate = createPalletDetailsRequest.EwWayBillDate
+	fmt.Println("pallet data to update-->", palletDetails)
 	dataToStore, _ := json.Marshal(palletDetails)
 
 	err := DumpData(stub, palletDetails.PalletSerialNumber, string(dataToStore))
@@ -399,11 +402,11 @@ func UpdatePalletCartonAssetByWayBill(stub shim.ChaincodeStubInterface, wayBillR
 	lenOfArray := len(wayBillRequest.PalletsSerialNumber)
 	fmt.Println("palletData=lenOfArray==", lenOfArray)
 
-	for i := 0; i < lenOfArray; i++ {
+	for q := 0; q < lenOfArray; q++ {
 
-		palletData, err := fetchPalletDetails(stub, wayBillRequest.PalletsSerialNumber[i])
+		fmt.Println("iiiiiiiiiii>...............", q)
+		palletData, err := fetchPalletDetails(stub, wayBillRequest.PalletsSerialNumber[q])
 		fmt.Println("palletData===", palletData)
-
 		if err != nil {
 			fmt.Println("Error while retrieveing the Pallet Details", err)
 			return nil, err
@@ -422,13 +425,14 @@ func UpdatePalletCartonAssetByWayBill(stub shim.ChaincodeStubInterface, wayBillR
 		fmt.Println("After savepalletDetails==")
 
 		//Start Loop for Carton Nos
-		lenOfArray = len(palletData.CartonSerialNumber)
-		fmt.Println("Carton lenOfArray==", lenOfArray)
+		lenOfcartonArray := len(palletData.CartonSerialNumber)
+		fmt.Println("Carton lenOfArray==", lenOfcartonArray)
 
-		for i := 0; i < lenOfArray; i++ {
+		for j := 0; j < lenOfcartonArray; j++ {
 
-			cartonData, err := fetchCartonDetails(stub, palletData.CartonSerialNumber[i])
+			cartonData, err := fetchCartonDetails(stub, palletData.CartonSerialNumber[j])
 			fmt.Println("cartonData===", cartonData)
+			fmt.Println("jjjjjjjjjjjjjj>...............", j)
 
 			if err != nil {
 				fmt.Println("Error while retrieveing the Carton Details", err)
@@ -447,14 +451,17 @@ func UpdatePalletCartonAssetByWayBill(stub shim.ChaincodeStubInterface, wayBillR
 			fmt.Println("after save carton===")
 
 		} //End Loop for Carton Nos
+		fmt.Println("iiiiiiiiiii after carton save----...............", q)
 
 		//Start Loop for Asset Nos
-		lenOfArray = len(palletData.AssetSerialNumber)
-		fmt.Println("assets lenOfArray===", lenOfArray)
-		for i := 0; i < lenOfArray; i++ {
+		lenOfassetArray := len(palletData.AssetSerialNumber)
+		fmt.Println("assets lenOfArray===", lenOfassetArray)
+		for k := 0; k < lenOfassetArray; k++ {
 
-			assetData, err := fetchAssetDetails(stub, palletData.AssetSerialNumber[i])
+			assetData, err := fetchAssetDetails(stub, palletData.AssetSerialNumber[k])
 			fmt.Println("assetData===", assetData)
+			fmt.Println("kkkkkkkkkkkkkkkkkkkkkkkkkk>...............", k)
+
 			if err != nil {
 				fmt.Println("Error while retrieveing the Asset Details", err)
 				return nil, err
@@ -471,7 +478,10 @@ func UpdatePalletCartonAssetByWayBill(stub shim.ChaincodeStubInterface, wayBillR
 			saveAssetDetails(stub, assetData)
 			fmt.Println("after save assets===")
 		} //End Loop for Asset Nos
+		fmt.Println("iiiiiiiiiii>  after asset save-------------...............", q)
+
 	}
+	fmt.Println("after all save--------------->")
 
 	resp := BlockchainResponse{}
 	resp.Err = "000"
