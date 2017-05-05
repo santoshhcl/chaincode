@@ -36,9 +36,12 @@ func CreateEWWayBill(stub shim.ChaincodeStubInterface, args []string) ([]byte, e
 		dcShipmentData.CustodianHistory = UpdateShipmentCustodianHistoryListForeWWaybill(stub, ewWayBillRequest.Custodian, ewWayBillRequest.Comments, ewWayBillRequest.EwWayBillCreationDate, dcShipmentNumber)
 		dcShipmentData.EWWayBillNumber = ewWayBillRequest.EwWayBillNumber
 
+		_, cartonsSerialNumber, assetsSerialNumber, _ := UpdatePalletCartonAssetByWayBill(stub, dcShipmentData, EWWAYBILL, ewWayBillRequest.EwWayBillNumber)
+		dcShipmentData.CartonsSerialNumber = cartonsSerialNumber
+		dcShipmentData.AssetsSerialNumber = assetsSerialNumber
+
 		saveShipmentWayBill(stub, dcShipmentData)
 
-		UpdatePalletCartonAssetByWayBill(stub, dcShipmentData, EWWAYBILL, ewWayBillRequest.EwWayBillNumber)
 		ewWayBillRequest.ShipmentsNumber = append(ewWayBillRequest.ShipmentsNumber, dcShipmentNumber)
 		lenOfArray = len(dcShipmentData.PalletsSerialNumber)
 		for j := 0; j < lenOfArray; j++ {
@@ -65,6 +68,28 @@ func CreateEWWayBill(stub shim.ChaincodeStubInterface, args []string) ([]byte, e
 	}
 	ewWayBillRequest.CustodianHistory = UpdateEWWaybillCustodianHistoryList(stub, ewWayBillRequest)
 	saveResult, errMsg := saveEWWayBill(stub, ewWayBillRequest)
+	fmt.Println("Start of Transaction Details Store Methods............")
+	saveResultRes := BlockchainResponse{}
+	json.Unmarshal([]byte(saveResult), &saveResultRes)
+
+	transactionDet := TransactionDetails{}
+	transactionDet.TransactionId = saveResultRes.TxID
+	transactionDet.TransactionTime = ewWayBillRequest.EwWayBillCreationDate
+	if errMsg != nil {
+		transactionDet.Status = "Failure"
+	} else {
+		transactionDet.Status = "Success"
+	}
+	transactionDet.FromUserId = ewWayBillRequest.Consigner
+	transactionDet.ToUserId = append(transactionDet.ToUserId, ewWayBillRequest.Consignee)
+	transactionDet.ToUserId = append(transactionDet.ToUserId, ewWayBillRequest.Custodian)
+	fmt.Println("Start of Transaction Details Store Methods transactionDet.TransactionId............", transactionDet.TransactionId)
+	fmt.Println("Start of Transaction Details Store Methods transactionDet.status............", transactionDet.Status)
+	fmt.Println("Start of Transaction Details Store Methods transactionDet.FromUserId............", transactionDet.FromUserId)
+	fmt.Println("Start of Transaction Details Store Methods transactionDet.ToUserId............", transactionDet.ToUserId)
+	fmt.Println("Start of Transaction Details Store Methods transactionDet.TransactionTime............", transactionDet.TransactionTime)
+	_ = saveTransactionDetails(stub, transactionDet)
+	fmt.Println("End of Transaction Details Store Methods............")
 
 	/*********Storing Shipment number in shipmentwaybillindex array to retrieve through inbox*************/
 	allEWWaybillidsRequest := AllEWWayBill{}
@@ -102,6 +127,28 @@ func UpdateEWWayBill(stub shim.ChaincodeStubInterface, args []string) ([]byte, e
 	emWayBilldata, _ := fetchEWWayBillData(stub, ewWayBillRequest.EwWayBillNumber)
 	ewWayBillRequest.SupportiveDocuments = emWayBilldata.SupportiveDocuments
 	saveResult, errMsg := saveEWWayBill(stub, ewWayBillRequest)
+	fmt.Println("Start of Transaction Details Store Methods............")
+	saveResultRes := BlockchainResponse{}
+	json.Unmarshal([]byte(saveResult), &saveResultRes)
+
+	transactionDet := TransactionDetails{}
+	transactionDet.TransactionId = saveResultRes.TxID
+	transactionDet.TransactionTime = ewWayBillRequest.EwWayBillModifiedDate
+	if errMsg != nil {
+		transactionDet.Status = "Failure"
+	} else {
+		transactionDet.Status = "Success"
+	}
+	transactionDet.FromUserId = ewWayBillRequest.Consigner
+	transactionDet.ToUserId = append(transactionDet.ToUserId, ewWayBillRequest.Consignee)
+	transactionDet.ToUserId = append(transactionDet.ToUserId, ewWayBillRequest.Custodian)
+	fmt.Println("Start of Transaction Details Store Methods transactionDet.TransactionId............", transactionDet.TransactionId)
+	fmt.Println("Start of Transaction Details Store Methods transactionDet.status............", transactionDet.Status)
+	fmt.Println("Start of Transaction Details Store Methods transactionDet.FromUserId............", transactionDet.FromUserId)
+	fmt.Println("Start of Transaction Details Store Methods transactionDet.ToUserId............", transactionDet.ToUserId)
+	fmt.Println("Start of Transaction Details Store Methods transactionDet.TransactionTime............", transactionDet.TransactionTime)
+	_ = saveTransactionDetails(stub, transactionDet)
+	fmt.Println("End of Transaction Details Store Methods............")
 	return saveResult, errMsg
 
 }
@@ -143,10 +190,11 @@ func saveEWWayBill(stub shim.ChaincodeStubInterface, createEWWayBillRequest EWWa
 	ewWayBill.EwWayBillModifiedDate = createEWWayBillRequest.EwWayBillModifiedDate
 	ewWayBill.EwWayBillModifiedBy = createEWWayBillRequest.EwWayBillModifiedBy
 	ewWayBill.Status = createEWWayBillRequest.Status
-
+	ewWayBill.CartonsSerialNumber = createEWWayBillRequest.CartonsSerialNumber
+	ewWayBill.AssetsSerialNumber = createEWWayBillRequest.AssetsSerialNumber
+	ewWayBill.EWWayBillImage = createEWWayBillRequest.EWWayBillImage
 	dataToStore, _ := json.Marshal(ewWayBill)
-
-	err := DumpData(stub, ewWayBill.EwWayBillNumber, string(dataToStore))
+	txId, err := DumpTxData(stub, ewWayBill.EwWayBillNumber, string(dataToStore))
 	if err != nil {
 		fmt.Println("Could not save Export Warehouse Way Bill to ledger", err)
 		return nil, err
@@ -154,6 +202,7 @@ func saveEWWayBill(stub shim.ChaincodeStubInterface, createEWWayBillRequest EWWa
 
 	resp := BlockchainResponse{}
 	resp.Err = "000"
+	resp.TxID = txId
 	resp.Message = ewWayBill.EwWayBillNumber
 
 	respString, _ := json.Marshal(resp)

@@ -1,5 +1,5 @@
 /*****Main Chaicode to start the execution*****
-V0.6
+V0.6 1
 /*****************************************************/
 package main
 
@@ -13,6 +13,7 @@ import (
 	"os"
 
 	"github.com/hyperledger/fabric/core/chaincode/shim"
+	//	"github.com/hyperledger/fabric/core/ledger"
 )
 
 const NODATA_ERROR_CODE string = "400"
@@ -66,8 +67,6 @@ type WayBillHistory struct {
 	Lat       float64 `json:"lat"`
 	Log       float64 `json:"log"`
 }
-
-
 
 type ShipmentIndex struct {
 	ShipmentNumber string
@@ -429,8 +428,6 @@ func fetchShipmentIndex(stub shim.ChaincodeStubInterface, callingEntityName stri
 
 //START COMMNENTED BY ARSHAD AS THESE ARE NO MORE USED - KARTHIK PLEASE REVIEW AND PERMANNETLY DELETE IT IF NOT USED BY ANY OF YOU MODULE
 
-
-
 /************** View Data for Key Starts ************************/
 
 func ViewDataForKey(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
@@ -445,9 +442,8 @@ func ViewDataForKey(stub shim.ChaincodeStubInterface, args []string) ([]byte, er
 /************** DumpData Start ************************/
 
 type DumpDataKeysType struct {
-	Keys 	[]string 	`json:"keys"`
+	Keys []string `json:"keys"`
 }
-
 
 func parseDumpDataKeysType(stub shim.ChaincodeStubInterface) DumpDataKeysType {
 	res := DumpDataKeysType{}
@@ -460,7 +456,7 @@ func parseDumpDataKeysType(stub shim.ChaincodeStubInterface) DumpDataKeysType {
 	return res
 }
 
-func storeDumpDataKeysType(stub shim.ChaincodeStubInterface, keyString string) (error) {
+func storeDumpDataKeysType(stub shim.ChaincodeStubInterface, keyString string) error {
 	ddData := parseDumpDataKeysType(stub)
 	var keys []string
 	keys = ddData.Keys
@@ -469,7 +465,7 @@ func storeDumpDataKeysType(stub shim.ChaincodeStubInterface, keyString string) (
 	fmt.Println(ddData)
 	dataToStore, _ := json.Marshal(ddData)
 	fmt.Println(string(dataToStore))
-	err :=  stub.PutState("DumpDataKeysType", dataToStore)
+	err := stub.PutState("DumpDataKeysType", dataToStore)
 	if err != nil {
 		fmt.Println("Could not save the DumpDataKeysType", err)
 		return err
@@ -477,11 +473,13 @@ func storeDumpDataKeysType(stub shim.ChaincodeStubInterface, keyString string) (
 	return nil
 }
 
-func DumpData(stub shim.ChaincodeStubInterface, argsKey string, argsValue string) (error) {
+func DumpData(stub shim.ChaincodeStubInterface, argsKey string, argsValue string) error {
 	fmt.Println("Entering DumpData " + argsKey + "  " + argsValue)
-	
 
 	err := stub.PutState(argsKey, []byte(argsValue))
+	//	led, _ := ledger.GetLedger()
+
+	//	fmt.Println("ledger =================================", led)
 	if err != nil {
 		fmt.Println("Could not save the Data", err)
 		return err
@@ -489,6 +487,20 @@ func DumpData(stub shim.ChaincodeStubInterface, argsKey string, argsValue string
 	storeDumpDataKeysType(stub, argsKey)
 
 	return nil
+}
+
+func DumpTxData(stub shim.ChaincodeStubInterface, argsKey string, argsValue string) (string, error) {
+	fmt.Println("Entering DumpData " + argsKey + "  " + argsValue)
+
+	err := stub.PutState(argsKey, []byte(argsValue))
+	txId := stub.GetTxID()
+	if err != nil {
+		fmt.Println("Could not save the Data", err)
+		return "", err
+	}
+	storeDumpDataKeysType(stub, argsKey)
+
+	return txId, nil
 }
 
 /************** DumpData Ends ************************/
@@ -557,10 +569,16 @@ func (t *B4SCChaincode) Invoke(stub shim.ChaincodeStubInterface, function string
 		return UpdateShipment(stub, args)
 	} else if function == "CreateWayBill" {
 		return CreateWayBill(stub, args)
+	} else if function == "UpdateWayBill" {
+		return UpdateWayBill(stub, args)
 	} else if function == "CreateDCShipment" {
 		return CreateDCShipment(stub, args)
+	} else if function == "UpdateDCShipment" {
+		return UpdateDCShipment(stub, args)
 	} else if function == "CreateDCWayBill" {
 		return CreateDCWayBill(stub, args)
+	} else if function == "UpdateDCWayBill" {
+		return UpdateDCWayBill(stub, args)
 	} else if function == "CreateEWWayBill" {
 		return CreateEWWayBill(stub, args)
 	} else if function == "UpdateEWWayBill" {
@@ -612,8 +630,14 @@ func (t *B4SCChaincode) Query(stub shim.ChaincodeStubInterface, function string,
 		return GetPallet(stub, args)
 	} else if function == "GetCarton" {
 		return GetCarton(stub, args)
-	} else if function == "ViewShipmentWayBill" {
-		return ViewShipmentWayBill(stub, args)
+	} else if function == "ViewShipment" {
+		return ViewShipment(stub, args)
+	} else if function == "ViewWayBill" {
+		return ViewWayBill(stub, args)
+	} else if function == "ViewDCShipment" {
+		return ViewDCShipment(stub, args)
+	} else if function == "ViewDCWayBill" {
+		return ViewDCWayBill(stub, args)
 	} else if function == "getAllComplianceDocument" {
 		return getAllComplianceDocument(stub, args)
 	} else if function == "SearchDateRange" {
@@ -627,6 +651,10 @@ func (t *B4SCChaincode) Query(stub shim.ChaincodeStubInterface, function string,
 	} else if function == "GetCountryWarehouse" {
 		var pageLoadService ShipmentPageLoadService
 		return pageLoadService.GetCountryWarehouse(stub, args)
+	} else if function == "GetTransactionRecords" {
+		fmt.Println("inside else Query : function : " + function + " args : " + args[0])
+		var transactionService TransactionService
+		return transactionService.GetTransactionRecords(stub, args)
 	}
 	return nil, errors.New("Invalid function name " + function)
 

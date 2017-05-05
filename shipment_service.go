@@ -6,6 +6,7 @@ ViewShipmentWayBill: Used to fetch Shipment details
 Author: Mohd Arshad
 Dated: 30/7/2017
 /*****************************************************/
+
 package main
 
 import (
@@ -19,11 +20,35 @@ import (
 func CreateShipment(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
 	fmt.Println("Entering Create Shipment", args[0])
 	shipmentRequest := parseShipmentWayBillRequest(args[0])
-	UpdatePalletCartonAssetByWayBill(stub, shipmentRequest, SHIPMENT, "")
+	_, cartonsSerialNumber, assetsSerialNumber, _ := UpdatePalletCartonAssetByWayBill(stub, shipmentRequest, SHIPMENT, "")
+	shipmentRequest.CartonsSerialNumber = cartonsSerialNumber
+	shipmentRequest.AssetsSerialNumber = assetsSerialNumber
 	fmt.Println("after updatepalletcartonasset............")
 	shipmentRequest.CustodianHistory = UpdateShipmentCustodianHistoryList(stub, shipmentRequest)
-	saveResult, errMsg := saveShipmentWayBill(stub, shipmentRequest)
 
+	saveResult, errMsg := saveShipmentWayBill(stub, shipmentRequest)
+	fmt.Println("Start of Transaction Details Store Methods............")
+	saveResultRes := BlockchainResponse{}
+	json.Unmarshal([]byte(saveResult), &saveResultRes)
+
+	transactionDet := TransactionDetails{}
+	transactionDet.TransactionId = saveResultRes.TxID
+	transactionDet.TransactionTime = shipmentRequest.ShipmentCreationDate
+	if errMsg != nil {
+		transactionDet.Status = "Failure"
+	} else {
+		transactionDet.Status = "Success"
+	}
+	transactionDet.FromUserId = shipmentRequest.Consigner
+	transactionDet.ToUserId = append(transactionDet.ToUserId, shipmentRequest.Consignee)
+	transactionDet.ToUserId = append(transactionDet.ToUserId, shipmentRequest.Carrier)
+	fmt.Println("Start of Transaction Details Store Methods transactionDet.TransactionId............", transactionDet.TransactionId)
+	fmt.Println("Start of Transaction Details Store Methods transactionDet.status............", transactionDet.Status)
+	fmt.Println("Start of Transaction Details Store Methods transactionDet.FromUserId............", transactionDet.FromUserId)
+	fmt.Println("Start of Transaction Details Store Methods transactionDet.ToUserId............", transactionDet.ToUserId)
+	fmt.Println("Start of Transaction Details Store Methods transactionDet.TransactionTime............", transactionDet.TransactionTime)
+	_ = saveTransactionDetails(stub, transactionDet)
+	fmt.Println("End of Transaction Details Store Methods............")
 	shipmentwaybillidsRequest := ShipmentWayBillIndex{}
 	shipmentwaybillids, err := FetchShipmentWayBillIndex(stub, "ShipmentWayBillIndex")
 	fmt.Println("shipment ids.....", shipmentwaybillids)
@@ -47,7 +72,30 @@ func UpdateShipment(stub shim.ChaincodeStubInterface, args []string) ([]byte, er
 	wayBilldata, _ := fetchShipmentWayBillData(stub, shipmentRequest.ShipmentNumber)
 	shipmentRequest.CustodianHistory = UpdateShipmentCustodianHistoryList(stub, shipmentRequest)
 	shipmentRequest.SupportiveDocuments = wayBilldata.SupportiveDocuments
-	return saveShipmentWayBill(stub, shipmentRequest)
+	saveResult, errMsg := saveShipmentWayBill(stub, shipmentRequest)
+	fmt.Println("Start of Transaction Details Store Methods............")
+	saveResultRes := BlockchainResponse{}
+	json.Unmarshal([]byte(saveResult), &saveResultRes)
+
+	transactionDet := TransactionDetails{}
+	transactionDet.TransactionId = saveResultRes.TxID
+	transactionDet.TransactionTime = shipmentRequest.ShipmentModifiedDate
+	if errMsg != nil {
+		transactionDet.Status = "Failure"
+	} else {
+		transactionDet.Status = "Success"
+	}
+	transactionDet.FromUserId = shipmentRequest.Consigner
+	transactionDet.ToUserId = append(transactionDet.ToUserId, shipmentRequest.Consignee)
+	transactionDet.ToUserId = append(transactionDet.ToUserId, shipmentRequest.Carrier)
+	fmt.Println("Start of Transaction Details Store Methods transactionDet.TransactionId............", transactionDet.TransactionId)
+	fmt.Println("Start of Transaction Details Store Methods transactionDet.status............", transactionDet.Status)
+	fmt.Println("Start of Transaction Details Store Methods transactionDet.FromUserId............", transactionDet.FromUserId)
+	fmt.Println("Start of Transaction Details Store Methods transactionDet.ToUserId............", transactionDet.ToUserId)
+	fmt.Println("Start of Transaction Details Store Methods transactionDet.TransactionTime............", transactionDet.TransactionTime)
+	_ = saveTransactionDetails(stub, transactionDet)
+	fmt.Println("End of Transaction Details Store Methods............")
+	return saveResult, errMsg
 }
 
 /************** Update Shipment Ends ************************/
@@ -104,16 +152,17 @@ func saveShipmentWayBill(stub shim.ChaincodeStubInterface, createShipmentWayBill
 	shipmentWayBill.WayBillModifiedDate = createShipmentWayBillRequest.WayBillModifiedDate
 	shipmentWayBill.WayBillModifiedBy = createShipmentWayBillRequest.WayBillModifiedBy
 	shipmentWayBill.Status = createShipmentWayBillRequest.Status
+	shipmentWayBill.CartonsSerialNumber = createShipmentWayBillRequest.CartonsSerialNumber
+	shipmentWayBill.AssetsSerialNumber = createShipmentWayBillRequest.AssetsSerialNumber
 	shipmentWayBill.ShipmentImage = createShipmentWayBillRequest.ShipmentImage
 	shipmentWayBill.WaybillImage = createShipmentWayBillRequest.WaybillImage
 	shipmentWayBill.DCShipmentImage = createShipmentWayBillRequest.DCShipmentImage
 	shipmentWayBill.DCWaybillImage = createShipmentWayBillRequest.DCWaybillImage
-
 	dataToStore, _ := json.Marshal(shipmentWayBill)
 	fmt.Println("shipmentWayBill============ ", shipmentWayBill)
 	fmt.Println("dataToStore============ ", dataToStore)
 
-	err := DumpData(stub, shipmentWayBill.ShipmentNumber, string(dataToStore))
+	txId, err := DumpTxData(stub, shipmentWayBill.ShipmentNumber, string(dataToStore))
 	if err != nil {
 		fmt.Println("Could not save WayBill to ledger", err)
 		return nil, err
@@ -122,6 +171,7 @@ func saveShipmentWayBill(stub shim.ChaincodeStubInterface, createShipmentWayBill
 	resp := BlockchainResponse{}
 	resp.Err = "000"
 	resp.Message = shipmentWayBill.ShipmentNumber
+	resp.TxID = txId
 	respString, _ := json.Marshal(resp)
 
 	fmt.Println("Successfully saved Way Bill")
@@ -134,8 +184,8 @@ func saveShipmentWayBill(stub shim.ChaincodeStubInterface, createShipmentWayBill
 /************** Get Shipment WayBill Starts ******************/
 /*This is common code for Get Shipment,WayBill,DCShipment,DCWayBill*/
 
-func ViewShipmentWayBill(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
-	fmt.Println("Entering ViewWayBill " + args[0])
+func ViewShipment(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
+	fmt.Println("Entering ViewShipment " + args[0])
 
 	shipmentNo := args[0]
 
