@@ -41,6 +41,7 @@ func CreateWayBill(stub shim.ChaincodeStubInterface, args []string) ([]byte, err
 	_, cartonsSerialNumber, assetsSerialNumber, _ := UpdatePalletCartonAssetByWayBill(stub, wayBillRequest, WAYBILL, "")
 	shipmentDetails.CartonsSerialNumber = cartonsSerialNumber
 	shipmentDetails.AssetsSerialNumber = assetsSerialNumber
+	shipmentDetails.WaybillImage = wayBillRequest.WaybillImage
 	saveResult, errMsg := saveShipmentWayBill(stub, shipmentDetails)
 	fmt.Println("Start of Transaction Details Store Methods............")
 	saveResultRes := BlockchainResponse{}

@@ -728,6 +728,7 @@ func fetchAllAssetData(stub shim.ChaincodeStubInterface) ([]string, error) {
 	json.Unmarshal(indexByte, &allAssetData)
 
 	fmt.Println("======================allAssetData data-->")
+	fmt.Println(string(indexByte))
 	fmt.Println(allAssetData)
 	fmt.Println("======================")
 
