@@ -204,7 +204,9 @@ func (t *ShipmentPageLoadService) fetchCorrespondingConsignees(stub shim.Chainco
 			fmt.Println("===tmpEntity.EntityId ===", tmpEntity.EntityId)
 
 			if err == nil {
-				if tmpEntity.EntityId != consignerDetails.ConsignerId && ((consignerDetails.ConsignerType == "Manufacturer" && tmpEntity.EntityType == "DC" && consignerDetails.ConsignerCountry == tmpEntity.EntityCountry) || (consignerDetails.ConsignerType == "DC" && tmpEntity.EntityType == "DC" && consignerDetails.ConsignerCountry != tmpEntity.EntityCountry) || (consignerDetails.ConsignerType == "Warehouse" && tmpEntity.EntityType == "Warehouse" && consignerDetails.ConsignerCountry != tmpEntity.EntityCountry)) {
+				if tmpEntity.EntityId != consignerDetails.ConsignerId && ((consignerDetails.ConsignerType == "Manufacturer" && tmpEntity.EntityType == "DC" && consignerDetails.ConsignerCountry == tmpEntity.EntityCountry) || (consignerDetails.ConsignerType == "DC" && tmpEntity.EntityType == "DC" && consignerDetails.ConsignerCountry != tmpEntity.EntityCountry)\
+				 || (consignerDetails.ConsignerType == "Warehouse" && tmpEntity.EntityType == "Warehouse" && consignerDetails.ConsignerCountry != tmpEntity.EntityCountry)
+				 || (consignerDetails.ConsignerType == "DC" && tmpEntity.EntityType == "Retailer" && consignerDetails.ConsignerCountry == tmpEntity.EntityCountry) ) {
 					tmpConsigneeResponse.ConsigneeId = tmpEntity.EntityId
 					tmpConsigneeResponse.ConsigneeName = tmpEntity.EntityName
 					tmpConsigneeResponse.ConsigneeAddress = tmpEntity.EntityAddress
