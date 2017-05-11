@@ -47,17 +47,18 @@ func CreateRetailerWayBill(stub shim.ChaincodeStubInterface, args []string) ([]b
 	retailershipmentDetails.Status = retailerwayBillRequest.Status
 	retailershipmentDetails.WaybillImage = retailerwayBillRequest.WaybillImage
 	retailershipmentDetails.CustodianHistory = UpdateShipmentCustodianHistoryList(stub, retailershipmentDetails)
+	retailershipmentDetails.PalletsSerialNumber, _ = getPalletSerialNoByCartonNo(stub, retailerwayBillRequest.CartonsSerialNumber)
 	_, cartonsSerialNumber, assetsSerialNumber, _ := UpdatePalletCartonAssetByWayBill(stub, retailerwayBillRequest, RETAILERWAYBILL, "")
-	dcshipmentDetails.CartonsSerialNumber = cartonsSerialNumber
-	dcshipmentDetails.AssetsSerialNumber = assetsSerialNumber
+	retailershipmentDetails.CartonsSerialNumber = cartonsSerialNumber
+	retailershipmentDetails.AssetsSerialNumber = assetsSerialNumber
 
-	UpdateEntityWayBillMapping(stub, dcshipmentDetails.EntityName, dcshipmentDetails.WayBillNumber, dcshipmentDetails.CountryFrom)
-	err = DumpData(stub, dcshipmentDetails.WayBillNumber, dcwayBillRequest.ShipmentNumber)
+	UpdateEntityWayBillMapping(stub, retailershipmentDetails.EntityName, retailershipmentDetails.WayBillNumber, retailershipmentDetails.CountryFrom)
+	err = DumpData(stub, retailershipmentDetails.WayBillNumber, retailerwayBillRequest.ShipmentNumber)
 	if err != nil {
 		fmt.Println("Could not save WayBill to ledger", err)
 		return nil, err
 	}
-	saveResult, errMsg := saveShipmentWayBill(stub, dcshipmentDetails)
+	saveResult, errMsg := saveShipmentWayBill(stub, retailershipmentDetails)
 
 	fmt.Println("Start of Transaction Details Store Methods............")
 	saveResultRes := BlockchainResponse{}
@@ -65,15 +66,15 @@ func CreateRetailerWayBill(stub shim.ChaincodeStubInterface, args []string) ([]b
 
 	transactionDet := TransactionDetails{}
 	transactionDet.TransactionId = saveResultRes.TxID
-	transactionDet.TransactionTime = dcshipmentDetails.WayBillCreationDate
+	transactionDet.TransactionTime = retailershipmentDetails.WayBillCreationDate
 	if errMsg != nil {
 		transactionDet.Status = "Failure"
 	} else {
 		transactionDet.Status = "Success"
 	}
-	transactionDet.FromUserId = dcshipmentDetails.Custodian
-	transactionDet.ToUserId = append(transactionDet.ToUserId, dcshipmentDetails.Consignee)
-	transactionDet.ToUserId = append(transactionDet.ToUserId, dcshipmentDetails.EntityName)
+	transactionDet.FromUserId = retailershipmentDetails.Custodian
+	transactionDet.ToUserId = append(transactionDet.ToUserId, retailershipmentDetails.Consignee)
+	transactionDet.ToUserId = append(transactionDet.ToUserId, retailershipmentDetails.EntityName)
 	fmt.Println("Start of Transaction Details Store Methods transactionDet.TransactionId............", transactionDet.TransactionId)
 	//fmt.Println("Start of Transaction Details Store Methods transactionDet.status............", transactionDet.Status)
 	//fmt.Println("Start of Transaction Details Store Methods transactionDet.FromUserId............", transactionDet.FromUserId)
@@ -81,12 +82,6 @@ func CreateRetailerWayBill(stub shim.ChaincodeStubInterface, args []string) ([]b
 	//fmt.Println("Start of Transaction Details Store Methods transactionDet.TransactionTime............", transactionDet.TransactionTime)
 	_ = saveTransactionDetails(stub, transactionDet)
 	fmt.Println("End of Transaction Details Store Methods............")
-
-	var waybillShipmentMapping WayBillShipmentMapping
-	waybillShipmentMapping.DCShipmentNumber = dcshipmentDetails.ShipmentNumber
-	waybillShipmentMapping.DCWayBillsNumber = dcshipmentDetails.WayBillNumber
-	saveWayBillShipmentMapping(stub, waybillShipmentMapping)
-	fmt.Println("Successfully saved waybill shipment mapping details")
 	return saveResult, errMsg
 
 }
