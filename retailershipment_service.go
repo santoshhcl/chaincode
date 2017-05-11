@@ -140,7 +140,7 @@ func getPalletSerialNoByCartonNo(stub shim.ChaincodeStubInterface, cartonNo []st
 	fmt.Println("length of carton array...", lenOfcartonArray)
 	var palletNo []string
 	for ca := 0; ca < lenOfcartonArray; ca++ {
-		cartonData, err := fetchCartonDetails(stub, cartonNo[ca])
+		cartonData, _ := fetchCartonDetails(stub, cartonNo[ca])
 		if stringExistInArray(palletNo, cartonData.PalletSerialNumber) {
 			palletNo = append(palletNo, cartonData.PalletSerialNumber)
 		}
