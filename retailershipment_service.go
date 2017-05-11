@@ -26,7 +26,7 @@ Dated: 09/05/2017
 func CreateRetailerShipment(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
 	fmt.Println("Entering Retailer Create Shipment", args[0])
 	shipmentRequest := parseShipmentWayBillRequest(args[0])
-	shipmentRequest.PalletsSerialNumber = getPalletSerialNoByCartonNo(shipmentRequest.CartonsSerialNumber)
+	shipmentRequest.PalletsSerialNumber, _ = getPalletSerialNoByCartonNo(stub, shipmentRequest.CartonsSerialNumber)
 	_, cartonsSerialNumber, assetsSerialNumber, _ := UpdatePalletCartonAssetByWayBill(stub, shipmentRequest, RETAILERSHIPMENT, "")
 	shipmentRequest.CartonsSerialNumber = cartonsSerialNumber
 	shipmentRequest.AssetsSerialNumber = assetsSerialNumber
@@ -134,8 +134,8 @@ func ViewRetailerShipment(stub shim.ChaincodeStubInterface, args []string) ([]by
 /************** Get  WayBill Ends ********************/
 
 //*************get pallet array by carton array****************//
-func getPalletSerialNoByCartonNo(stub shim.ChaincodeStubInterface, cartonNo string) ([]string, error) {
-	fmt.Println("Entering getPalletSerialNoByCartonNo " + cartonNo)
+func getPalletSerialNoByCartonNo(stub shim.ChaincodeStubInterface, cartonNo []string) ([]string, error) {
+	fmt.Println("Entering getPalletSerialNoByCartonNo ", cartonNo)
 	lenOfcartonArray := len(cartonNo)
 	fmt.Println("length of carton array...", lenOfcartonArray)
 	var palletNo []string
