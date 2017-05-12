@@ -260,6 +260,27 @@ func GetCarton(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) 
 	return nil, dataerr
 
 }
+func stringExistInArray(arrayData []string, data string) bool {
+	arraylen := len(arrayData)
+	result := false
+	for i := 0; i < arraylen; i++ {
+		if arrayData[i] == data {
+			return true
+		}
+	}
+	return result
+}
+
+func stringNotExistInArray(arrayData []string, data string) bool {
+	arraylen := len(arrayData)
+	result := true
+	for i := 0; i < arraylen; i++ {
+		if arrayData[i] == data {
+			return false
+		}
+	}
+	return result
+}
 func fetchCartonDetails(stub shim.ChaincodeStubInterface, cartonSerialNo string) (CartonDetails, error) {
 	var cartonDetails CartonDetails
 

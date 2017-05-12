@@ -141,7 +141,7 @@ func getPalletSerialNoByCartonNo(stub shim.ChaincodeStubInterface, cartonNo []st
 	var palletNo []string
 	for ca := 0; ca < lenOfcartonArray; ca++ {
 		cartonData, _ := fetchCartonDetails(stub, cartonNo[ca])
-		if stringExistInArray(palletNo, cartonData.PalletSerialNumber) {
+		if stringNotExistInArray(palletNo, cartonData.PalletSerialNumber) {
 			palletNo = append(palletNo, cartonData.PalletSerialNumber)
 		}
 	}
@@ -149,13 +149,4 @@ func getPalletSerialNoByCartonNo(stub shim.ChaincodeStubInterface, cartonNo []st
 	return palletNo, nil
 
 }
-func stringExistInArray(arrayData []string, data string) bool {
-	arraylen := len(arrayData)
-	result := false
-	for i := 0; i < arraylen; i++ {
-		if arrayData[i] == data {
-			result = true
-		}
-	}
-	return result
-}
+
