@@ -27,7 +27,7 @@ func (t *TransactionService) GetTransactionRecords(stub shim.ChaincodeStubInterf
 	tmpEntity, err := thisClass.fetchTransactionEntity(stub, "TransactionDetailsKey")
 	if err != nil {
 		fmt.Println("Error while retrieveing the Transaction Details", err)
-		return nil, err
+		return tmpEntity, err
 	}
 	resp.TransactionDetailsArr = thisClass.checkTransactionCondition(request.CallingEntityName, tmpEntity.TransactionDetailsArr)
 	datatoreturn, _ := json.Marshal(resp)
