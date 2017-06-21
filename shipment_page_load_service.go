@@ -88,7 +88,7 @@ func (t *ShipmentPageLoadService) GetCountryWarehouse(stub shim.ChaincodeStubInt
 			tmpEntity, err = thisClass.fetchEntities(stub, allEntities.EntityArr[i])
 
 			if err == nil {
-				if tmpEntity.EntityCountry == request.CountryFrom && tmpEntity.EntityType == "Warehouse" {
+				if tmpEntity.EntityCountry == request.CountryFrom && tmpEntity.EntityType == "Wholesaler" {
 					tmpConsigneeResponse.ConsigneeId = tmpEntity.EntityId
 					tmpConsigneeResponse.ConsigneeName = tmpEntity.EntityName
 					tmpConsigneeResponse.ConsigneeAddress = tmpEntity.EntityAddress

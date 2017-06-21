@@ -138,7 +138,7 @@ func (t *InboxService) checkInboxCondition(entityId string, entityType string, i
 		}
 	}
 
-	if entityType == "Warehouse" {
+	if entityType == "Wholesaler" {
 		if inboxName == "Scheduled" && ((status == "DCWaybillCreated" && entityId == entityName) || (status == "EWWaybillAtOCCargo" && consigneeName == entityId)) {
 			return "true"
 		}
